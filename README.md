@@ -21,6 +21,11 @@ Dump DB in JSON format
 java -jar dataexporter.jar --database DataKit.db --json
 ```
 
+Dump DB in gzip compressed JSON format
+```
+java -jar dataexporter.jar --database DataKit.db --gzjson
+```
+
 Dump DB in CSV format
 ```
 java -jar dataexporter.jar --database DataKit.db --json
