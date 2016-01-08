@@ -69,7 +69,6 @@ public class Main {
             DataExport de = new DataExport(line.getOptionValue("database"));
 
             List<Integer> ids = de.getIDs();
-
             for (Integer id : ids) {
                 if(line.hasOption("csv")) {
                     de.writeCSVDataFile(id);
@@ -79,6 +78,7 @@ public class Main {
                 }
                 if(line.hasOption("gzjson")) {
                     de.writeGzipJSONDataFile(id);
+                    de.postData("http://192.168.99.100/api/", id);
                 }
             }
 

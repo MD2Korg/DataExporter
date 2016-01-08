@@ -29,6 +29,18 @@ package org.md2k.dataexporter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.codec.digest.MessageDigestAlgorithms;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.md2k.cerebralcortex.CerebralCortexDataPackage;
 import org.md2k.cerebralcortex.TSV;
 import org.md2k.datakitapi.datatype.*;
@@ -36,8 +48,11 @@ import org.md2k.datakitapi.source.datasource.DataSource;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -86,7 +101,10 @@ public class DataExport {
         }
     }
 
-    public byte[] generateGzipJSON(DataSource ds, List<String> result) {
+    public byte[] generateGzipJSON(Integer id) {
+        List<String> result = getTimeseriesDataStream(id);
+        DataSource ds = getDataSource(id);
+
         String json = generateJSON(ds, result);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
@@ -304,5 +322,42 @@ public class DataExport {
         return result;
     }
 
+    private static String byteArray2Hex(final byte[] hash) {
+        Formatter formatter = new Formatter();
+        for (byte b : hash) {
+            formatter.format("%02x", b);
+        }
+        return formatter.toString();
+    }
 
+    public void postData(String request, Integer id) {
+        byte[] data = generateGzipJSON(id);
+        String hash = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            hash = byteArray2Hex(md.digest(data));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        HttpPost post = new HttpPost(request);
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        builder.addBinaryBody("file", data, ContentType.DEFAULT_BINARY, "3_BATTERY_359535058251051_PHONE.gz");
+        builder.addTextBody("hash",hash,ContentType.DEFAULT_TEXT);
+
+        HttpEntity entity = builder.build();
+        post.setEntity(entity);
+        HttpResponse response = null;
+        try {
+            response = client.execute(post);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(response);
+
+    }
 }
