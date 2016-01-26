@@ -5,7 +5,7 @@ import org.md2k.datakitapi.source.AbstractObject;
 
 import java.io.Serializable;
 
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.

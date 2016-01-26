@@ -5,7 +5,7 @@ import org.md2k.datakitapi.source.AbstractObjectBuilder;
 
 import java.io.Serializable;
 
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -43,11 +43,6 @@ public class PlatformBuilder extends AbstractObjectBuilder implements Serializab
         return this;
     }
 
-    public PlatformBuilder setDescription(String description) {
-        super.setDescription(description);
-        return this;
-    }
-
     public PlatformBuilder setMetadata(String key, String value) {
         super.setMetadata(key, value);
         return this;
@@ -63,7 +58,6 @@ public class PlatformBuilder extends AbstractObjectBuilder implements Serializab
     public PlatformBuilder(Platform platform) {
         this.metadata = platform.getMetadata();
         this.type = platform.getType();
-        this.description = platform.getDescription();
         this.id = platform.getId();
     }
 

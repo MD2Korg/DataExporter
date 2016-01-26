@@ -7,8 +7,10 @@ import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.source.platformapp.PlatformApp;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -36,35 +38,26 @@ import java.io.*;
  */
 public class DataSource extends AbstractObject implements Serializable {
     private static final long serialVersionUID = Constants.serialVersionUID;
-    private DataSource[] lineage = null;
-    private String dataType = null;
     private Platform platform = null;
     private PlatformApp platformApp = null;
     private Application application = null;
     private boolean persistent = true;
+    private ArrayList<HashMap<String,String>> dataDescriptors =null;
+
 
     DataSource(DataSourceBuilder dataSourceBuilder) {
         super(dataSourceBuilder);
-        this.lineage = dataSourceBuilder.lineage;
-        this.dataType = dataSourceBuilder.dataType;
         this.platform = dataSourceBuilder.platform;
         this.platformApp = dataSourceBuilder.platformApp;
         this.application = dataSourceBuilder.application;
         this.persistent = dataSourceBuilder.persistent;
+        this.dataDescriptors=dataSourceBuilder.dataDescriptors;
     }
     public DataSourceBuilder toDataSourceBuilder(){
         DataSourceBuilder dataSourceBuilder = super.toDataSourceBuilder();
-        dataSourceBuilder=dataSourceBuilder.setLineage(lineage).setDataType(dataType).
-                setPlatform(platform).setPlatformApp(platformApp).setApplication(application).setPersistent(persistent);
+        dataSourceBuilder=dataSourceBuilder.
+                setPlatform(platform).setPlatformApp(platformApp).setApplication(application).setPersistent(persistent).setDataDescriptors(dataDescriptors);
         return dataSourceBuilder;
-    }
-
-    public DataSource[] getLineage() {
-        return lineage;
-    }
-
-    public String getDataType() {
-        return dataType;
     }
 
     public Platform getPlatform() {
@@ -107,6 +100,10 @@ public class DataSource extends AbstractObject implements Serializable {
             }
         }
         return null;
+    }
+
+    public ArrayList<HashMap<String, String>> getDataDescriptors() {
+        return dataDescriptors;
     }
 
     public static DataSource fromBytes(byte[] dataSourceByteArray) {

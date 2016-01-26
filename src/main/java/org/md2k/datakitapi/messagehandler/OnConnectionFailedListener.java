@@ -1,6 +1,6 @@
-package org.md2k.datakitapi.datatype;
+package org.md2k.datakitapi.messagehandler;
 
-import java.io.Serializable;
+import org.md2k.datakitapi.status.Status;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -28,14 +28,7 @@ import java.io.Serializable;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataTypeByteArray extends DataType implements Serializable{
-    byte[] sample;
 
-    public DataTypeByteArray(long timestamp, byte[] sample) {
-        super(timestamp);
-        this.sample=sample;
-    }
-    public byte[] getSample(){
-        return sample;
-    }
+public interface OnConnectionFailedListener {
+    public void onConnectionFailed(Status status);
 }

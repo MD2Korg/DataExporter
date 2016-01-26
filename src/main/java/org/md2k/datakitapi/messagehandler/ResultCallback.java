@@ -1,13 +1,6 @@
-package org.md2k.datakitapi.source.datasource;
+package org.md2k.datakitapi.messagehandler;
 
-import org.md2k.datakitapi.Constants;
-import org.md2k.datakitapi.status.Status;
-import org.md2k.datakitapi.status.StatusCodes;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -33,30 +26,6 @@ import java.util.ArrayList;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataSourceResult extends Object implements Serializable {
-    private static final long serialVersionUID = Constants.serialVersionUID;
-    private Status status;
-    ArrayList<DataSource> dataSources;
-
-    ArrayList<DataSource> getDataSources() {
-        return dataSources;
-    }
-
-    public DataSourceResult() {
-        setStatus();
-        dataSources = new ArrayList<DataSource>();
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus() {
-        String str = StatusCodes.generateStatusString(StatusCodes.DATASOURCE_NOT_EXIST);
-        status = new Status(StatusCodes.DATASOURCE_NOT_EXIST, str);
-    }
-
-    public void addDataSource(DataSource dataSource) {
-        dataSources.add(dataSource);
-    }
+public interface ResultCallback<R> {
+    public abstract void onResult(R result);
 }

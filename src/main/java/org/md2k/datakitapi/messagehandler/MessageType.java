@@ -1,6 +1,4 @@
-package org.md2k.datakitapi.datatype;
-
-import java.io.Serializable;
+package org.md2k.datakitapi.messagehandler;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -28,14 +26,15 @@ import java.io.Serializable;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataTypeByteArray extends DataType implements Serializable{
-    byte[] sample;
-
-    public DataTypeByteArray(long timestamp, byte[] sample) {
-        super(timestamp);
-        this.sample=sample;
-    }
-    public byte[] getSample(){
-        return sample;
-    }
+public class MessageType {
+    public static final int CONNECT = 1;
+    public static final int DISCONNECT=2;
+    public static final int REGISTER = 3;
+    public static final int UNREGISTER = 4;
+    public static final int SUBSCRIBE = 5;
+    public static final int UNSUBSCRIBE = 6;
+    public static final int INSERT = 7;
+    public static final int QUERY = 8;
+    public static final int FIND =9;
+    public static final int SUBSCRIBED_DATA=10;
 }

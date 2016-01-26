@@ -4,7 +4,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -50,7 +50,7 @@ public class StatusCodes{
     public static String getStatusCodeString(int statusCode) {
         String constNames = "Unknown";
         if (constantNames == null) {
-            Map<Integer, String> cNames = new HashMap<Integer, String>();
+            Map<Integer, String> cNames = new HashMap<>();
             for (Field field : StatusCodes.class.getDeclaredFields()) {
                 if ((field.getModifiers() & (Modifier.FINAL | Modifier.STATIC)) != 0 && int.class == field.getType()) {
                     // only record final static int fields

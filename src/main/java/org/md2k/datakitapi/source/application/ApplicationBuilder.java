@@ -5,7 +5,7 @@ import org.md2k.datakitapi.source.AbstractObjectBuilder;
 
 import java.io.Serializable;
 
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -43,11 +43,6 @@ public class ApplicationBuilder extends AbstractObjectBuilder implements Seriali
         return this;
     }
 
-    public ApplicationBuilder setDescription(String description) {
-        super.setDescription(description);
-        return this;
-    }
-
     public ApplicationBuilder setMetadata(String key, String value) {
         super.setMetadata(key, value);
         return this;
@@ -57,7 +52,6 @@ public class ApplicationBuilder extends AbstractObjectBuilder implements Seriali
     public ApplicationBuilder(Application application){
         this.metadata=application.getMetadata();
         this.type=application.getType();
-        this.description=application.getDescription();
         this.id=application.getId();
     }
 

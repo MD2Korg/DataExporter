@@ -1,6 +1,6 @@
-package org.md2k.datakitapi.datatype;
+package org.md2k.datakitapi.source.platform;
 
-import java.io.Serializable;
+import org.md2k.datakitapi.Constants;
 
 /**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
@@ -28,14 +28,9 @@ import java.io.Serializable;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataTypeByteArray extends DataType implements Serializable{
-    byte[] sample;
-
-    public DataTypeByteArray(long timestamp, byte[] sample) {
-        super(timestamp);
-        this.sample=sample;
-    }
-    public byte[] getSample(){
-        return sample;
-    }
+public class PlatformId {
+    private static final long serialVersionUID = Constants.serialVersionUID;
+    public static final String CHEST = "CHEST";
+    public static final String LEFT_WRIST = "LEFT_WRIST";
+    public static final String RIGHT_WRIST = "RIGHT_WRIST";
 }

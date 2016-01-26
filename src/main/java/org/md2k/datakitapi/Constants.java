@@ -1,6 +1,6 @@
 package org.md2k.datakitapi;
 
-/*
+/**
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -27,5 +27,5 @@ package org.md2k.datakitapi;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Constants {
-    public static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 2L;
 }
