@@ -29,12 +29,8 @@ package org.md2k.dataexporter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -139,9 +135,9 @@ public class DataExport {
             osw.write(json);
             osw.close();
 
-            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, false), "utf-8"));
-            writer.write(json);
-            writer.close();
+//            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, false), "utf-8"));
+//            writer.write(json);
+//            writer.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -402,7 +398,7 @@ public class DataExport {
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        builder.addBinaryBody("file", data, ContentType.DEFAULT_BINARY, "3_BATTERY_359535058251051_PHONE.gz");
+        builder.addBinaryBody("file", data, ContentType.DEFAULT_BINARY, "file");
         builder.addTextBody("hash",hash,ContentType.DEFAULT_TEXT);
 
         HttpEntity entity = builder.build();

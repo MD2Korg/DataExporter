@@ -78,7 +78,7 @@ public class Main {
                 }
                 if(line.hasOption("gzjson")) {
                     de.writeGzipJSONDataFile(id);
-                    de.postData("http://md2k-hnat.memphis.edu/api/", id);
+                    //de.postData("http://md2k-hnat.memphis.edu/api/", id);
                 }
             }
 
