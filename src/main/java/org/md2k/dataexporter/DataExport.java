@@ -42,7 +42,9 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.md2k.cerebralcortex.CerebralCortexDataPackage;
+import org.md2k.cerebralcortex.StudyInfo;
 import org.md2k.cerebralcortex.TSV;
+import org.md2k.cerebralcortex.UserInfo;
 import org.md2k.datakitapi.datatype.*;
 import org.md2k.datakitapi.source.datasource.DataSource;
 
@@ -51,9 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.List;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 
@@ -77,9 +77,14 @@ public class DataExport {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         CerebralCortexDataPackage obj = new CerebralCortexDataPackage();
 
-        obj.datasource = ds;
+        UserInfo userInfo = getUserInfo();
+        StudyInfo studyInfo = getStudyInfo();
 
-        for(String s: result) {
+        obj.datasource = ds;
+        obj.userinfo = userInfo;
+        obj.studyinfo = studyInfo;
+
+        for (String s : result) {
             obj.data.add(new TSV(s));
         }
         return gson.toJson(obj);
@@ -158,6 +163,57 @@ public class DataExport {
         }
     }
 
+
+    public UserInfo getUserInfo() {
+        UserInfo result = new UserInfo();
+        int streamID = -1;
+        try {
+            ResultSet rs = statement.executeQuery("select ds_id from datasource where datasource.datasource_type=='USER_INFO'");
+            while (rs.next()) {
+                streamID = rs.getInt("ds_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (streamID >= 0) {
+            List<String> user = getTimeseriesDataStream(streamID);
+            for(String s: user) {
+                String[] json = s.split(",",2);
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                UserInfo ui = gson.fromJson(json[1], UserInfo.class);
+                if(!ui.user_id.isEmpty()) {
+                    return ui;
+                }
+            }
+        }
+        return result;
+    }
+
+
+    public StudyInfo getStudyInfo() {
+        StudyInfo result = new StudyInfo();
+        int streamID = -1;
+        try {
+            ResultSet rs = statement.executeQuery("select ds_id from datasource where datasource.datasource_type=='STUDY_INFO'");
+            while (rs.next()) {
+                streamID = rs.getInt("ds_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (streamID >= 0) {
+            List<String> study = getTimeseriesDataStream(streamID);
+            for(String s: study) {
+                String[] json = s.split(",",2);
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                StudyInfo si = gson.fromJson(json[1], StudyInfo.class);
+                if(!si.study_id.isEmpty()) {
+                    return si;
+                }
+            }
+        }
+        return result;
+    }
 
 
     public List<Integer> getIDs() {
@@ -360,4 +416,5 @@ public class DataExport {
         System.out.println(response);
 
     }
+
 }
