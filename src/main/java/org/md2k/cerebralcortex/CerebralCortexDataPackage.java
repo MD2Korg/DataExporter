@@ -32,6 +32,9 @@ import org.md2k.datakitapi.source.datasource.DataSource;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Container for JSON representation of datastreams
+ */
 public class CerebralCortexDataPackage {
     public UserInfo userinfo;
     public StudyInfo studyinfo;

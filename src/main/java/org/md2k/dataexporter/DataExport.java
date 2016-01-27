@@ -53,10 +53,17 @@ import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 
+/**
+ * Data Export tool
+ */
 public class DataExport {
 
     private Statement statement = null;
 
+    /**
+     * Build a DataExport object that connects to a sqlite database file
+     * @param filename SQLite database file
+     */
     public DataExport(String filename) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + filename);
@@ -69,6 +76,12 @@ public class DataExport {
     }
 
 
+    /**
+     * Generate JSON from query results
+     * @param ds DataSource object from DataKit API
+     * @param result JSON string representation of the CerebralCortexDataPackage object
+     * @return
+     */
     private String generateJSON(DataSource ds, List<String> result) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         CerebralCortexDataPackage obj = new CerebralCortexDataPackage();
@@ -86,6 +99,10 @@ public class DataExport {
         return gson.toJson(obj);
     }
 
+    /**
+     * Generate and write a data stream to file in the JSON format
+     * @param id Datastream id
+     */
     public void writeJSONDataFile(Integer id) {
         try {
             String filename = getOutputFilename(id);
@@ -96,12 +113,16 @@ public class DataExport {
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".json", false), "utf-8"));
             writer.write(json);
             writer.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Generate a Gzipped JSON byte array
+     * @param id Datastream id
+     * @return byte array representing a Gzipped JSON representation of the CerebralCortexDataPackage object
+     */
     public byte[] generateGzipJSON(Integer id) {
         List<String> result = getTimeseriesDataStream(id);
         DataSource ds = getDataSource(id);
@@ -121,6 +142,10 @@ public class DataExport {
 
     }
 
+    /**
+     * Generate and write a data stream to a Gzip-compressed file in the JSON format
+     * @param id Datastream id
+     */
     public void writeGzipJSONDataFile(Integer id) {
         try {
             String filename = getOutputFilename(id);
@@ -135,15 +160,16 @@ public class DataExport {
             osw.write(json);
             osw.close();
 
-//            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, false), "utf-8"));
-//            writer.write(json);
-//            writer.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Generate and write a data stream to a CSV file.  Note: meta data that is in the JSON representations is not
+     * present in the CSV files.
+     * @param id Datastream id
+     */
     public void writeCSVDataFile(Integer id) {
         try {
             String filename = getOutputFilename(id);
@@ -160,6 +186,10 @@ public class DataExport {
     }
 
 
+    /**
+     * Retrieve the user id from its data stream
+     * @return populated UserInfo object
+     */
     public UserInfo getUserInfo() {
         UserInfo result = new UserInfo();
         int streamID = -1;
@@ -185,7 +215,10 @@ public class DataExport {
         return result;
     }
 
-
+    /**
+     * Retrieve the study id and study name from its data stream
+     * @return populated StudyInfo object
+     */
     public StudyInfo getStudyInfo() {
         StudyInfo result = new StudyInfo();
         int streamID = -1;
@@ -212,10 +245,12 @@ public class DataExport {
     }
 
 
+    /**
+     * Retrieve datasource ids from the database
+     * @return List of ids
+     */
     public List<Integer> getIDs() {
         List<Integer> ids = new ArrayList<Integer>();
-
-
         try {
             ResultSet rs = statement.executeQuery("Select ds_id from datasource");
             while (rs.next()) {
@@ -228,6 +263,11 @@ public class DataExport {
         return ids;
     }
 
+    /**
+     * Generate an output filename based on the datastream id
+     * @param id Datastream id
+     * @return String identifier for a filename
+     */
     public String getOutputFilename(Integer id) {
         String filename = "";
         List<String> parameters = new ArrayList<String>();
@@ -243,10 +283,14 @@ public class DataExport {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return filename;
     }
 
+    /**
+     * Get datasource from the database and decode it
+     * @param id Datasource id to retrieve
+     * @return DataSource object populated from the database
+     */
     public DataSource getDataSource(Integer id) {
         DataSource result = null;
         try {
@@ -258,10 +302,15 @@ public class DataExport {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
 
+    /**
+     * Main method to retrieve a timeseries datastream from the database.  It decodes all known encodings and
+     * represents them in their appropriate Java object form
+     * @param id Stream identifier
+     * @return List of string representations of the datastream elements
+     */
     public List<String> getTimeseriesDataStream(Integer id) {
         List<String> result = new ArrayList<String>();
         try {
@@ -374,6 +423,11 @@ public class DataExport {
         return result;
     }
 
+    /**
+     * Utility function to convert a byte[] to hex
+     * @param hash
+     * @return
+     */
     private static String byteArray2Hex(final byte[] hash) {
         Formatter formatter = new Formatter();
         for (byte b : hash) {
@@ -382,7 +436,12 @@ public class DataExport {
         return formatter.toString();
     }
 
-    public void postData(String request, Integer id) {
+    /**
+     * Upload method for publishing data to the Cerebral Cortex webservice
+     * @param request URL
+     * @param id of the datastream to publish
+     */
+    public void publishGzipJSONData(String request, Integer id) {
         byte[] data = generateGzipJSON(id);
         String hash = null;
         try {
@@ -391,7 +450,6 @@ public class DataExport {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
 
         CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(request);

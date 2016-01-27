@@ -6,15 +6,21 @@ Data export tool for mCerebrum DataKit databases into JSON and CSV formats
 ## Examples
 Get help on commandline arguments
 ```
-java -jar dataexporter.jar --help
-
-usage: java -jar dataexporter.jar [-c] -d <file> [-g] [-h] [-j]
+usage: java -jar dataexporter.jar [-c] -d <file> [-g] [-h] [-j] [-p <URL>]
  -c,--csv               enable CSV file output
  -d,--database <file>   mCerebrum SQLite Database File
  -g,--gzjson            enable Gzip-JSON file output
  -h,--help              print this message
  -j,--json              enable JSON file output
+ -p,--publish <URL>     configure publishing to webservice
 ```
+
+
+Publish DB to webservice
+```
+java -jar dataexporter.jar --database DataKit.db --publish https://server.md2k.org/api/
+```
+
 
 Dump DB in JSON format
 ```

@@ -33,6 +33,7 @@ import java.util.Collection;
 public class TSV {
     public long timestamp;
     public Collection<String> values = new ArrayList<String>();
+
     public TSV(String s) {
         boolean ts = false;
         for(String st: s.split(",")) {

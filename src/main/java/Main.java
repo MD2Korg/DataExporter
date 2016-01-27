@@ -30,7 +30,14 @@ import org.md2k.dataexporter.DataExport;
 
 import java.util.List;
 
+/**
+ * Main class to run DataExport
+ */
 public class Main {
+    /**
+     * Main method
+     * @param args options to configure execution
+     */
     public static void main(String[] args) {
 
         Options options = new Options();
@@ -48,6 +55,10 @@ public class Main {
 
         Option csvFlag = new Option("c", "csv", false, "enable CSV file output");
         options.addOption(csvFlag);
+
+        Option publish = new Option("p", "publish", true, "configure publishing to webservice");
+        publish.setArgName("URL");
+        options.addOption(publish);
 
         Option help = new Option("h", "help", false, "print this message" );
         options.addOption(help);
@@ -70,6 +81,9 @@ public class Main {
 
             List<Integer> ids = de.getIDs();
             for (Integer id : ids) {
+                if(line.hasOption("publish")) {
+                    de.publishGzipJSONData(line.getOptionValue("publish"), id);
+                }
                 if(line.hasOption("csv")) {
                     de.writeCSVDataFile(id);
                 }
@@ -78,7 +92,6 @@ public class Main {
                 }
                 if(line.hasOption("gzjson")) {
                     de.writeGzipJSONDataFile(id);
-                    //de.postData("http://md2k-hnat.memphis.edu/api/", id);
                 }
             }
 
