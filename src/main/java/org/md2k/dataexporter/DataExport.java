@@ -49,7 +49,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 
@@ -62,32 +64,30 @@ public class DataExport {
 
     /**
      * Build a DataExport object that connects to a sqlite database file
+     *
      * @param filename SQLite database file
      */
     public DataExport(String filename) {
         try {
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + filename);
             statement = connection.createStatement();
-            statement.setQueryTimeout(30);
+            statement.setQueryTimeout(60);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
-
     }
 
 
     /**
      * Generate JSON from query results
-     * @param ds DataSource object from DataKit API
+     *
+     * @param ds     DataSource object from DataKit API
      * @param result JSON string representation of the CerebralCortexDataPackage object
      * @return
      */
-    private String generateJSON(DataSource ds, List<String> result) {
+    private String generateJSON(UserInfo userInfo, StudyInfo studyInfo, DataSource ds, List<String> result) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         CerebralCortexDataPackage obj = new CerebralCortexDataPackage();
-
-        UserInfo userInfo = getUserInfo();
-        StudyInfo studyInfo = getStudyInfo();
 
         obj.datasource = ds;
         obj.userinfo = userInfo;
@@ -100,7 +100,21 @@ public class DataExport {
     }
 
     /**
+     * Generate JSON from query results
+     *
+     * @param ds     DataSource object from DataKit API
+     * @param result JSON string representation of the CerebralCortexDataPackage object
+     * @return
+     */
+    private String generateJSON(DataSource ds, List<String> result) {
+        UserInfo userInfo = getUserInfo();
+        StudyInfo studyInfo = getStudyInfo();
+        return generateJSON(userInfo, studyInfo, ds, result);
+    }
+
+    /**
      * Generate and write a data stream to file in the JSON format
+     *
      * @param id Datastream id
      */
     public void writeJSONDataFile(Integer id) {
@@ -118,16 +132,30 @@ public class DataExport {
         }
     }
 
+
     /**
      * Generate a Gzipped JSON byte array
+     *
      * @param id Datastream id
      * @return byte array representing a Gzipped JSON representation of the CerebralCortexDataPackage object
      */
-    public byte[] generateGzipJSON(Integer id) {
+    private byte[] generateGzipJSON(Integer id) {
         List<String> result = getTimeseriesDataStream(id);
         DataSource ds = getDataSource(id);
+        UserInfo ui = getUserInfo();
+        StudyInfo si = getStudyInfo();
+        return generateGzipJSON(result, ui, si, ds);
+    }
 
-        String json = generateJSON(ds, result);
+    /**
+     * Generate a Gzipped JSON byte array
+     *
+     * @param result List of data items
+     * @param ds     DataSource object
+     * @return byte array representing a Gzipped JSON representation of the CerebralCortexDataPackage object
+     */
+    private byte[] generateGzipJSON(List<String> result, UserInfo ui, StudyInfo si, DataSource ds) {
+        String json = generateJSON(ui, si, ds, result);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
             GZIPOutputStream gzip = new GZIPOutputStream(bos);
@@ -144,6 +172,7 @@ public class DataExport {
 
     /**
      * Generate and write a data stream to a Gzip-compressed file in the JSON format
+     *
      * @param id Datastream id
      */
     public void writeGzipJSONDataFile(Integer id) {
@@ -168,6 +197,7 @@ public class DataExport {
     /**
      * Generate and write a data stream to a CSV file.  Note: meta data that is in the JSON representations is not
      * present in the CSV files.
+     *
      * @param id Datastream id
      */
     public void writeCSVDataFile(Integer id) {
@@ -188,9 +218,10 @@ public class DataExport {
 
     /**
      * Retrieve the user id from its data stream
+     *
      * @return populated UserInfo object
      */
-    public UserInfo getUserInfo() {
+    private UserInfo getUserInfo() {
         UserInfo result = new UserInfo();
         int streamID = -1;
         try {
@@ -203,11 +234,11 @@ public class DataExport {
         }
         if (streamID >= 0) {
             List<String> user = getTimeseriesDataStream(streamID);
-            for(String s: user) {
-                String[] json = s.split(",",2);
+            for (String s : user) {
+                String[] json = s.split(",", 2);
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 UserInfo ui = gson.fromJson(json[1], UserInfo.class);
-                if(!ui.user_id.isEmpty()) {
+                if (!ui.user_id.isEmpty()) {
                     return ui;
                 }
             }
@@ -217,9 +248,10 @@ public class DataExport {
 
     /**
      * Retrieve the study id and study name from its data stream
+     *
      * @return populated StudyInfo object
      */
-    public StudyInfo getStudyInfo() {
+    private StudyInfo getStudyInfo() {
         StudyInfo result = new StudyInfo();
         int streamID = -1;
         try {
@@ -232,11 +264,11 @@ public class DataExport {
         }
         if (streamID >= 0) {
             List<String> study = getTimeseriesDataStream(streamID);
-            for(String s: study) {
-                String[] json = s.split(",",2);
+            for (String s : study) {
+                String[] json = s.split(",", 2);
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 StudyInfo si = gson.fromJson(json[1], StudyInfo.class);
-                if(!si.study_id.isEmpty()) {
+                if (!si.study_id.isEmpty()) {
                     return si;
                 }
             }
@@ -247,6 +279,7 @@ public class DataExport {
 
     /**
      * Retrieve datasource ids from the database
+     *
      * @return List of ids
      */
     public List<Integer> getIDs() {
@@ -265,10 +298,11 @@ public class DataExport {
 
     /**
      * Generate an output filename based on the datastream id
+     *
      * @param id Datastream id
      * @return String identifier for a filename
      */
-    public String getOutputFilename(Integer id) {
+    private String getOutputFilename(Integer id) {
         String filename = "";
         List<String> parameters = new ArrayList<String>();
         try {
@@ -288,10 +322,11 @@ public class DataExport {
 
     /**
      * Get datasource from the database and decode it
+     *
      * @param id Datasource id to retrieve
      * @return DataSource object populated from the database
      */
-    public DataSource getDataSource(Integer id) {
+    private DataSource getDataSource(Integer id) {
         DataSource result = null;
         try {
             ResultSet rs = statement.executeQuery("Select datasource from datasource where ds_id = " + id);
@@ -305,116 +340,30 @@ public class DataExport {
         return result;
     }
 
+    private List<String> getTimeseriesDataStream(List<DataType> data) {
+        List<String> result = new ArrayList<String>();
+        for (DataType dt : data) {
+            result.add(DataTypeToString(dt));
+        }
+
+        return result;
+    }
+
     /**
      * Main method to retrieve a timeseries datastream from the database.  It decodes all known encodings and
      * represents them in their appropriate Java object form
+     *
      * @param id Stream identifier
      * @return List of string representations of the datastream elements
      */
-    public List<String> getTimeseriesDataStream(Integer id) {
+    private List<String> getTimeseriesDataStream(Integer id) {
         List<String> result = new ArrayList<String>();
         try {
             ResultSet rs = statement.executeQuery("Select sample from data where datasource_id = " + id);
             while (rs.next()) {
                 byte[] b = rs.getBytes("sample");
-
                 DataType dt = DataType.fromBytes(b);
-
-                if(dt instanceof DataTypeBoolean) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeBoolean) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeBooleanArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(Boolean d: ((DataTypeBooleanArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-                
-                else if(dt instanceof DataTypeByte) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeByte) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeByteArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(Byte d: ((DataTypeByteArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-                
-                else if(dt instanceof DataTypeDouble) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeDouble) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeDoubleArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(Double d: ((DataTypeDoubleArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-                
-                else if(dt instanceof DataTypeFloat) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeFloat) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeFloatArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(Float d: ((DataTypeFloatArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-                
-                else if(dt instanceof DataTypeInt) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeInt) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeIntArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(Integer d: ((DataTypeIntArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-                
-                else if(dt instanceof DataTypeLong) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeLong) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeLongArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(Long d: ((DataTypeLongArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-
-                else if(dt instanceof DataTypeString) {
-                    String temp = Long.toString(dt.getDateTime());
-                    temp += ", " + ((DataTypeString) dt).getSample();
-                    result.add(temp);
-                }
-                else if(dt instanceof DataTypeStringArray) {
-                    String temp = Long.toString(dt.getDateTime());
-                    for(String d: ((DataTypeStringArray) dt).getSample()) {
-                        temp += ", " + d;
-                    }
-                    result.add(temp);
-                }
-
-                else {
-                    System.out.println("Unknown Object");
-                }
-
+                result.add(DataTypeToString(dt));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -423,8 +372,73 @@ public class DataExport {
         return result;
     }
 
+    private String DataTypeToString(DataType dt) {
+        String temp = "";
+        if (dt instanceof DataTypeBoolean) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeBoolean) dt).getSample();
+        } else if (dt instanceof DataTypeBooleanArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (Boolean d : ((DataTypeBooleanArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else if (dt instanceof DataTypeByte) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeByte) dt).getSample();
+        } else if (dt instanceof DataTypeByteArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (Byte d : ((DataTypeByteArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else if (dt instanceof DataTypeDouble) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeDouble) dt).getSample();
+        } else if (dt instanceof DataTypeDoubleArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (Double d : ((DataTypeDoubleArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else if (dt instanceof DataTypeFloat) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeFloat) dt).getSample();
+        } else if (dt instanceof DataTypeFloatArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (Float d : ((DataTypeFloatArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else if (dt instanceof DataTypeInt) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeInt) dt).getSample();
+        } else if (dt instanceof DataTypeIntArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (Integer d : ((DataTypeIntArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else if (dt instanceof DataTypeLong) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeLong) dt).getSample();
+        } else if (dt instanceof DataTypeLongArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (Long d : ((DataTypeLongArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else if (dt instanceof DataTypeString) {
+            temp = Long.toString(dt.getDateTime());
+            temp += ", " + ((DataTypeString) dt).getSample();
+        } else if (dt instanceof DataTypeStringArray) {
+            temp = Long.toString(dt.getDateTime());
+            for (String d : ((DataTypeStringArray) dt).getSample()) {
+                temp += ", " + d;
+            }
+        } else {
+            System.out.println("Unknown Object");
+        }
+        return temp;
+    }
+
     /**
      * Utility function to convert a byte[] to hex
+     *
      * @param hash
      * @return
      */
@@ -436,19 +450,37 @@ public class DataExport {
         return formatter.toString();
     }
 
+    public boolean publishTimeSeriesDataStream(String requestURL, List<DataType> data, UserInfo ui, StudyInfo si, DataSource ds) {
+        List<String> datastream = getTimeseriesDataStream(data);
+        byte[] bData = generateGzipJSON(datastream, ui, si, ds);
+        return publishGzipJSONData(requestURL, bData);
+    }
+
     /**
      * Upload method for publishing data to the Cerebral Cortex webservice
+     *
      * @param request URL
-     * @param id of the datastream to publish
+     * @param id      of the datastream to publish
      */
-    public void publishGzipJSONData(String request, Integer id) {
+    public boolean publishGzipJSONData(String request, Integer id) {
         byte[] data = generateGzipJSON(id);
+        return publishGzipJSONData(request, data);
+    }
+
+    /**
+     * Upload method for publishing data to the Cerebral Cortex webservice
+     *
+     * @param request URL
+     * @param data    Byte[] of data to send to Cerebral Cortex
+     */
+    private boolean publishGzipJSONData(String request, byte[] data) {
         String hash = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             hash = byteArray2Hex(md.digest(data));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+            return false;
         }
 
         CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -457,7 +489,7 @@ public class DataExport {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         builder.addBinaryBody("file", data, ContentType.DEFAULT_BINARY, "file");
-        builder.addTextBody("hash",hash,ContentType.DEFAULT_TEXT);
+        builder.addTextBody("hash", hash, ContentType.DEFAULT_TEXT);
 
         HttpEntity entity = builder.build();
         post.setEntity(entity);
@@ -466,9 +498,10 @@ public class DataExport {
             response = client.execute(post);
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
         System.out.println(response);
-
+        return true;
     }
 
 }
