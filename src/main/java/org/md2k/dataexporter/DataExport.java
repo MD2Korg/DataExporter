@@ -77,6 +77,10 @@ public class DataExport {
         }
     }
 
+    public DataExport() {
+
+    }
+
 
     /**
      * Generate JSON from query results

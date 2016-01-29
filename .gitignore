@@ -43,6 +43,8 @@ gradle-app.setting
 
 # Gradle:
 # .idea/gradle.xml
+/settings.gradle
+/dataexporter.iml
 # .idea/libraries
 
 # Mongo Explorer plugin:
