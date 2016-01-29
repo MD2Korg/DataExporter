@@ -76,4 +76,7 @@ public class DataSourceType {
     public static final String USER_INFO = "USER_INFO";
     public static final String SLEEP = "SLEEP";
 
+    public static final String STRESS_PROBABILITY="STRESS_PROBABILITY";
+    public static final String STRESS_LABEL="STRESS_LABEL";
+
 }
