@@ -81,8 +81,13 @@ public class Main {
 
             List<Integer> ids = de.getIDs();
             for (Integer id : ids) {
+                System.out.println("ID: " + id);
                 if(line.hasOption("publish")) {
-                    de.publishGzipJSONData(line.getOptionValue("publish"), id);
+                    if (de.publishGzipJSONData(line.getOptionValue("publish"), id)) {
+                        System.out.println("Success");
+                    } else {
+                        System.out.println("Failure");
+                    }
                 }
                 if(line.hasOption("csv")) {
                     de.writeCSVDataFile(id);
