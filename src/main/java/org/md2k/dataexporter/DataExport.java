@@ -41,8 +41,8 @@ import org.md2k.cerebralcortex.CerebralCortexDataPackage;
 import org.md2k.cerebralcortex.StudyInfo;
 import org.md2k.cerebralcortex.TSV;
 import org.md2k.cerebralcortex.UserInfo;
-import org.md2k.datakitapi.datatype.*;
 import org.md2k.datakitapi.source.datasource.DataSource;
+import org.md2k.datakitapi.datatype.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -203,11 +203,13 @@ public class DataExport {
     public void writeCSVDataFile(Integer id) {
         try {
             String filename = getOutputFilename(id);
-            List<String> result = getTimeseriesDataStream(id);
-
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".csv", false), "utf-8"));
-            for (String s : result) {
-                writer.write(s + "\n");
+            SQLiteIterator sqli = new SQLiteIterator(statement, id);
+            while(sqli.hasNext()) {
+                List<String> result = sqli.next();
+                for (String s : result) {
+                    writer.write(s + "\n");
+                }
             }
             writer.close();
         } catch (Exception e) {
@@ -243,6 +245,29 @@ public class DataExport {
                 }
             }
         }
+        return result;
+    }
+
+    /**
+     * Main method to retrieve a timeseries datastream from the database.  It decodes all known encodings and
+     * represents them in their appropriate Java object form
+     *
+     * @param id Stream identifier
+     * @return List of string representations of the datastream elements
+     */
+    private List<String> getTimeseriesDataStream(Integer id) {
+        List<String> result = new ArrayList<String>();
+        try {
+            ResultSet rs = statement.executeQuery("Select sample from data where datasource_id = " + id);
+            while (rs.next()) {
+                byte[] b = rs.getBytes("sample");
+                DataType dt = DataType.fromBytes(b);
+                result.add(DataTypeConverter.DataTypeToString(dt));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return result;
     }
 
@@ -306,12 +331,18 @@ public class DataExport {
         String filename = "";
         List<String> parameters = new ArrayList<String>();
         try {
-            ResultSet rs = statement.executeQuery("Select ds_id, datasource_type, platform_id, platform_type from datasource where ds_id = " + id);
+            ResultSet rs = statement.executeQuery("Select * from datasource where ds_id = " + id);
             while (rs.next()) {
                 parameters.add(Integer.toString(rs.getInt("ds_id")));
+                parameters.add(rs.getString("datasource_id"));
                 parameters.add(rs.getString("datasource_type"));
                 parameters.add(rs.getString("platform_id"));
                 parameters.add(rs.getString("platform_type"));
+                parameters.add(rs.getString("platformapp_id"));
+                parameters.add(rs.getString("platformapp_type"));
+                parameters.add(rs.getString("application_id"));
+                parameters.add(rs.getString("application_type"));
+
             }
             filename = String.join("_", parameters);
         } catch (SQLException e) {
@@ -343,98 +374,13 @@ public class DataExport {
     private List<String> getTimeseriesDataStream(List<DataType> data) {
         List<String> result = new ArrayList<String>();
         for (DataType dt : data) {
-            result.add(DataTypeToString(dt));
+            result.add(DataTypeConverter.DataTypeToString(dt));
         }
 
         return result;
     }
 
-    /**
-     * Main method to retrieve a timeseries datastream from the database.  It decodes all known encodings and
-     * represents them in their appropriate Java object form
-     *
-     * @param id Stream identifier
-     * @return List of string representations of the datastream elements
-     */
-    private List<String> getTimeseriesDataStream(Integer id) {
-        List<String> result = new ArrayList<String>();
-        try {
-            ResultSet rs = statement.executeQuery("Select sample from data where datasource_id = " + id);
-            while (rs.next()) {
-                byte[] b = rs.getBytes("sample");
-                DataType dt = DataType.fromBytes(b);
-                result.add(DataTypeToString(dt));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        return result;
-    }
-
-    private String DataTypeToString(DataType dt) {
-        String temp = "";
-        if (dt instanceof DataTypeBoolean) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeBoolean) dt).getSample();
-        } else if (dt instanceof DataTypeBooleanArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (Boolean d : ((DataTypeBooleanArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else if (dt instanceof DataTypeByte) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeByte) dt).getSample();
-        } else if (dt instanceof DataTypeByteArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (Byte d : ((DataTypeByteArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else if (dt instanceof DataTypeDouble) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeDouble) dt).getSample();
-        } else if (dt instanceof DataTypeDoubleArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (Double d : ((DataTypeDoubleArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else if (dt instanceof DataTypeFloat) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeFloat) dt).getSample();
-        } else if (dt instanceof DataTypeFloatArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (Float d : ((DataTypeFloatArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else if (dt instanceof DataTypeInt) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeInt) dt).getSample();
-        } else if (dt instanceof DataTypeIntArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (Integer d : ((DataTypeIntArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else if (dt instanceof DataTypeLong) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeLong) dt).getSample();
-        } else if (dt instanceof DataTypeLongArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (Long d : ((DataTypeLongArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else if (dt instanceof DataTypeString) {
-            temp = Long.toString(dt.getDateTime());
-            temp += ", " + ((DataTypeString) dt).getSample();
-        } else if (dt instanceof DataTypeStringArray) {
-            temp = Long.toString(dt.getDateTime());
-            for (String d : ((DataTypeStringArray) dt).getSample()) {
-                temp += ", " + d;
-            }
-        } else {
-            System.out.println("Unknown Object");
-        }
-        return temp;
-    }
 
     /**
      * Utility function to convert a byte[] to hex
