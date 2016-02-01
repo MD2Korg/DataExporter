@@ -35,10 +35,11 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class SQLiteIterator implements Iterator<List<String>> {
+public class SQLiteIterator implements Iterator<List<DataType>> {
     private ResultSet rs;
-
-    public SQLiteIterator(Statement statement, Integer id) {
+    private int bufferSize = 10000;
+    public SQLiteIterator(Statement statement, Integer id, int bufferSize) {
+        this.bufferSize = bufferSize;
         try {
             rs = statement.executeQuery("Select sample from data where datasource_id = " + id);
         } catch (SQLException e) {
@@ -58,13 +59,13 @@ public class SQLiteIterator implements Iterator<List<String>> {
     }
 
     @Override
-    public List<String> next() {
-        List<String> result = new ArrayList<String>();
+    public List<DataType> next() {
+        List<DataType> result = new ArrayList<DataType>();
         try {
-            while (result.size() < 10000 && rs.next()) {
+            while (result.size() < bufferSize && rs.next()) {
                 byte[] b = rs.getBytes("sample");
                 DataType dt = DataType.fromBytes(b);
-                result.add(DataTypeConverter.DataTypeToString(dt));
+                result.add(dt);
             }
         } catch (SQLException e) {
             e.printStackTrace();

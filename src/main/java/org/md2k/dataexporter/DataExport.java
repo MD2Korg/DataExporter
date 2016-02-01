@@ -29,6 +29,7 @@ package org.md2k.dataexporter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonWriter;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -49,9 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.List;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 
@@ -61,6 +60,8 @@ import java.util.zip.GZIPOutputStream;
 public class DataExport {
 
     private Statement statement = null;
+    private UserInfo userInfo = null;
+    private StudyInfo studyInfo = null;
 
     /**
      * Build a DataExport object that connects to a sqlite database file
@@ -85,32 +86,15 @@ public class DataExport {
      * @param result JSON string representation of the CerebralCortexDataPackage object
      * @return
      */
-    private String generateJSON(UserInfo userInfo, StudyInfo studyInfo, DataSource ds, List<String> result) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private CerebralCortexDataPackage generateCerebralCortexHeader(UserInfo userInfo, StudyInfo studyInfo, DataSource ds) {
         CerebralCortexDataPackage obj = new CerebralCortexDataPackage();
-
         obj.datasource = ds;
         obj.userinfo = userInfo;
         obj.studyinfo = studyInfo;
 
-        for (String s : result) {
-            obj.data.add(new TSV(s));
-        }
-        return gson.toJson(obj);
+        return obj;
     }
 
-    /**
-     * Generate JSON from query results
-     *
-     * @param ds     DataSource object from DataKit API
-     * @param result JSON string representation of the CerebralCortexDataPackage object
-     * @return
-     */
-    private String generateJSON(DataSource ds, List<String> result) {
-        UserInfo userInfo = getUserInfo();
-        StudyInfo studyInfo = getStudyInfo();
-        return generateJSON(userInfo, studyInfo, ds, result);
-    }
 
     /**
      * Generate and write a data stream to file in the JSON format
@@ -120,32 +104,57 @@ public class DataExport {
     public void writeJSONDataFile(Integer id) {
         try {
             String filename = getOutputFilename(id);
-            List<String> result = getTimeseriesDataStream(id);
-            DataSource ds = getDataSource(id);
-
-            String json = generateJSON(ds, result);
-            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".json", false), "utf-8"));
-            writer.write(json);
+            JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(filename + ".json", false), "utf-8"));
+            writer.setIndent("  ");
+            JSONDataFileRepresentation(id, writer);
             writer.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
-    /**
-     * Generate a Gzipped JSON byte array
-     *
-     * @param id Datastream id
-     * @return byte array representing a Gzipped JSON representation of the CerebralCortexDataPackage object
-     */
-    private byte[] generateGzipJSON(Integer id) {
-        List<String> result = getTimeseriesDataStream(id);
+    private void JSONDataFileRepresentation(Integer id, JsonWriter writer) throws IOException {
         DataSource ds = getDataSource(id);
-        UserInfo ui = getUserInfo();
-        StudyInfo si = getStudyInfo();
-        return generateGzipJSON(result, ui, si, ds);
+        UserInfo userInfo = getUserInfo();
+        StudyInfo studyInfo = getStudyInfo();
+
+        SQLiteIterator sqli = new SQLiteIterator(statement, id, 10000);
+
+        JSONDataRepresentation(writer, ds, userInfo, studyInfo, sqli, false);
     }
+
+    private boolean JSONDataRepresentation(JsonWriter writer, DataSource ds, UserInfo userInfo, StudyInfo studyInfo, Iterator iter, boolean segmentData) throws IOException {
+        CerebralCortexDataPackage header = generateCerebralCortexHeader(userInfo,studyInfo,ds);
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        writer.beginObject();
+        writer.name("userinfo");
+        gson.toJson(header.userinfo, UserInfo.class, writer);
+        writer.name("studyinfo");
+        gson.toJson(header.studyinfo, StudyInfo.class, writer);
+        writer.name("datasource");
+        gson.toJson(header.datasource, DataSource.class, writer);
+
+        writer.name("data");
+        writer.beginArray();
+
+        while(iter.hasNext()) {
+            List<DataType> result = (List<DataType>) iter.next();
+            for (DataType dt : result) {
+                TSV entry = new TSV(DataTypeConverter.DataTypeToString(dt));
+                gson.toJson(entry, TSV.class, writer);
+            }
+            if(segmentData) {
+                break;
+            }
+        }
+        writer.endArray();
+
+        writer.endObject();
+        return iter.hasNext();
+    }
+
 
     /**
      * Generate a Gzipped JSON byte array
@@ -154,44 +163,23 @@ public class DataExport {
      * @param ds     DataSource object
      * @return byte array representing a Gzipped JSON representation of the CerebralCortexDataPackage object
      */
-    private byte[] generateGzipJSON(List<String> result, UserInfo ui, StudyInfo si, DataSource ds) {
-        String json = generateJSON(ui, si, ds, result);
+    private ByteOutputArray generateGzipJSON(UserInfo ui, StudyInfo si, DataSource ds, Iterator iter, boolean segmentData) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        boolean additionalData = false;
         try {
             GZIPOutputStream gzip = new GZIPOutputStream(bos);
             OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
-            osw.write(json);
+            JsonWriter writer = new JsonWriter(osw);
+            writer.setIndent("  ");
+            additionalData = JSONDataRepresentation(writer, ds, ui, si, iter, segmentData);
+            writer.close();
             osw.close();
+            gzip.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return bos.toByteArray();
-
-    }
-
-    /**
-     * Generate and write a data stream to a Gzip-compressed file in the JSON format
-     *
-     * @param id Datastream id
-     */
-    public void writeGzipJSONDataFile(Integer id) {
-        try {
-            String filename = getOutputFilename(id);
-            List<String> result = getTimeseriesDataStream(id);
-            DataSource ds = getDataSource(id);
-
-            String json = generateJSON(ds, result);
-
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filename + ".gz", false));
-            GZIPOutputStream gzip = new GZIPOutputStream(bos);
-            OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
-            osw.write(json);
-            osw.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return new ByteOutputArray(bos.toByteArray(), additionalData);
     }
 
     /**
@@ -204,11 +192,11 @@ public class DataExport {
         try {
             String filename = getOutputFilename(id);
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".csv", false), "utf-8"));
-            SQLiteIterator sqli = new SQLiteIterator(statement, id);
+            SQLiteIterator sqli = new SQLiteIterator(statement, id, 10000);
             while(sqli.hasNext()) {
-                List<String> result = sqli.next();
-                for (String s : result) {
-                    writer.write(s + "\n");
+                List<DataType> result = sqli.next();
+                for (DataType dt : result) {
+                    writer.write(DataTypeConverter.DataTypeToString(dt) + "\n");
                 }
             }
             writer.close();
@@ -224,7 +212,11 @@ public class DataExport {
      * @return populated UserInfo object
      */
     private UserInfo getUserInfo() {
+        if (this.userInfo != null) {
+            return this.userInfo;
+        }
         UserInfo result = new UserInfo();
+
         int streamID = -1;
         try {
             ResultSet rs = statement.executeQuery("select ds_id from datasource where datasource.datasource_type=='USER_INFO'");
@@ -234,42 +226,26 @@ public class DataExport {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         if (streamID >= 0) {
-            List<String> user = getTimeseriesDataStream(streamID);
-            for (String s : user) {
-                String[] json = s.split(",", 2);
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                UserInfo ui = gson.fromJson(json[1], UserInfo.class);
-                if (!ui.user_id.isEmpty()) {
-                    return ui;
+            SQLiteIterator sqli = new SQLiteIterator(statement, streamID, 10000);
+            while(sqli.hasNext()) {
+                List<DataType> user = sqli.next();
+                for (DataType dt : user) {
+                    String[] json = DataTypeConverter.DataTypeToString(dt).split(",", 2);
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    UserInfo ui = gson.fromJson(json[1], UserInfo.class);
+                    if (!ui.user_id.isEmpty()) {
+                        return ui;
+                    }
+
                 }
             }
         }
+        this.userInfo = result;
         return result;
     }
 
-    /**
-     * Main method to retrieve a timeseries datastream from the database.  It decodes all known encodings and
-     * represents them in their appropriate Java object form
-     *
-     * @param id Stream identifier
-     * @return List of string representations of the datastream elements
-     */
-    private List<String> getTimeseriesDataStream(Integer id) {
-        List<String> result = new ArrayList<String>();
-        try {
-            ResultSet rs = statement.executeQuery("Select sample from data where datasource_id = " + id);
-            while (rs.next()) {
-                byte[] b = rs.getBytes("sample");
-                DataType dt = DataType.fromBytes(b);
-                result.add(DataTypeConverter.DataTypeToString(dt));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return result;
-    }
 
     /**
      * Retrieve the study id and study name from its data stream
@@ -277,6 +253,9 @@ public class DataExport {
      * @return populated StudyInfo object
      */
     private StudyInfo getStudyInfo() {
+        if (this.studyInfo != null) {
+            return this.studyInfo;
+        }
         StudyInfo result = new StudyInfo();
         int streamID = -1;
         try {
@@ -288,16 +267,21 @@ public class DataExport {
             e.printStackTrace();
         }
         if (streamID >= 0) {
-            List<String> study = getTimeseriesDataStream(streamID);
-            for (String s : study) {
-                String[] json = s.split(",", 2);
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                StudyInfo si = gson.fromJson(json[1], StudyInfo.class);
-                if (!si.study_id.isEmpty()) {
-                    return si;
+            SQLiteIterator sqli = new SQLiteIterator(statement, streamID, 10000);
+            while(sqli.hasNext()) {
+                List<DataType> study = sqli.next();
+                for (DataType dt : study) {
+                    String[] json = DataTypeConverter.DataTypeToString(dt).split(",", 2);
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    StudyInfo si = gson.fromJson(json[1], StudyInfo.class);
+                    if (!si.study_id.isEmpty()) {
+                        return si;
+                    }
+
                 }
             }
         }
+        this.studyInfo = result;
         return result;
     }
 
@@ -371,17 +355,6 @@ public class DataExport {
         return result;
     }
 
-    private List<String> getTimeseriesDataStream(List<DataType> data) {
-        List<String> result = new ArrayList<String>();
-        for (DataType dt : data) {
-            result.add(DataTypeConverter.DataTypeToString(dt));
-        }
-
-        return result;
-    }
-
-
-
     /**
      * Utility function to convert a byte[] to hex
      *
@@ -397,9 +370,11 @@ public class DataExport {
     }
 
     public boolean publishTimeSeriesDataStream(String requestURL, List<DataType> data, UserInfo ui, StudyInfo si, DataSource ds) {
-        List<String> datastream = getTimeseriesDataStream(data);
-        byte[] bData = generateGzipJSON(datastream, ui, si, ds);
-        return publishGzipJSONData(requestURL, bData);
+        ListIterator<DataType> iter = data.listIterator();
+        byte[] d = null;
+        ByteOutputArray boa = generateGzipJSON(ui, si, ds, iter, true);
+
+        return publishData(requestURL, boa.data);
     }
 
     /**
@@ -409,9 +384,25 @@ public class DataExport {
      * @param id      of the datastream to publish
      */
     public boolean publishGzipJSONData(String request, Integer id) {
-        byte[] data = generateGzipJSON(id);
-        return publishGzipJSONData(request, data);
+        DataSource ds = getDataSource(id);
+        UserInfo userInfo = getUserInfo();
+        StudyInfo studyInfo = getStudyInfo();
+
+        SQLiteIterator sqli = new SQLiteIterator(statement, id, 10000000);
+
+        boolean success = false;
+        ByteOutputArray boa;
+        do {
+            boa = generateGzipJSON(userInfo, studyInfo, ds, sqli, true);
+            success = publishData(request, boa.data);
+            if (!success) {
+                return success;
+            }
+        } while (boa.additionalData);
+        return success;
     }
+
+
 
     /**
      * Upload method for publishing data to the Cerebral Cortex webservice
@@ -419,7 +410,7 @@ public class DataExport {
      * @param request URL
      * @param data    Byte[] of data to send to Cerebral Cortex
      */
-    private boolean publishGzipJSONData(String request, byte[] data) {
+    private boolean publishData(String request, byte[] data) {
         String hash = null;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -441,6 +432,7 @@ public class DataExport {
         post.setEntity(entity);
         HttpResponse response = null;
         try {
+            System.out.println("HTTP Request: " + hash);
             response = client.execute(post);
         } catch (IOException e) {
             e.printStackTrace();

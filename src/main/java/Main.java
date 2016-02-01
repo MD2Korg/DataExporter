@@ -50,9 +50,6 @@ public class Main {
         Option jsonFlag = new Option("j", "json", false, "enable JSON file output");
         options.addOption(jsonFlag);
 
-        Option gzjsonFlag = new Option("g", "gzjson", false, "enable Gzip-JSON file output");
-        options.addOption(gzjsonFlag);
-
         Option csvFlag = new Option("c", "csv", false, "enable CSV file output");
         options.addOption(csvFlag);
 
@@ -94,9 +91,6 @@ public class Main {
                 }
                 if(line.hasOption("json")) {
                     de.writeJSONDataFile(id);
-                }
-                if(line.hasOption("gzjson")) {
-                    de.writeGzipJSONDataFile(id);
                 }
             }
 
