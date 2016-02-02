@@ -9,27 +9,19 @@ Get help on commandline arguments
 usage: java -jar dataexporter.jar [-c] -d <file> [-g] [-h] [-j] [-p <URL>]
  -c,--csv               enable CSV file output
  -d,--database <file>   mCerebrum SQLite Database File
- -g,--gzjson            enable Gzip-JSON file output
  -h,--help              print this message
  -j,--json              enable JSON file output
  -p,--publish <URL>     configure publishing to webservice
 ```
-
 
 Publish DB to webservice
 ```
 java -jar dataexporter.jar --database DataKit.db --publish https://server.md2k.org/api/
 ```
 
-
 Dump DB in JSON format
 ```
 java -jar dataexporter.jar --database DataKit.db --json
-```
-
-Dump DB in gzip compressed JSON format
-```
-java -jar dataexporter.jar --database DataKit.db --gzjson
 ```
 
 Dump DB in CSV format
