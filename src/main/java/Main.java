@@ -78,7 +78,7 @@ public class Main {
 
             List<Integer> ids = de.getIDs();
             for (Integer id : ids) {
-                System.out.println("ID: " + id);
+                System.out.println("Exporting data stream: " + id);
                 if(line.hasOption("publish")) {
                     if (de.publishGzipJSONData(line.getOptionValue("publish"), id)) {
                         System.out.println("Success");

@@ -37,7 +37,7 @@ import java.util.List;
 
 public class SQLiteIterator implements Iterator<List<DataType>> {
     private ResultSet rs;
-    private int bufferSize = 10000;
+    private int bufferSize;
     public SQLiteIterator(Statement statement, Integer id, int bufferSize) {
         this.bufferSize = bufferSize;
         try {

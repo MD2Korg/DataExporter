@@ -1,5 +1,7 @@
-package org.md2k.dataexporter;/*
- * Copyright (c) 2015, The University of Memphis, MD2K Center 
+package org.md2k.dataexporter;
+
+/*
+ * Copyright (c) 2016, The University of Memphis, MD2K Center
  * - Timothy Hnat <twhnat@memphis.edu>
  * All rights reserved.
  * 

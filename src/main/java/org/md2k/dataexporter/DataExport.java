@@ -59,9 +59,14 @@ import java.util.zip.GZIPOutputStream;
  */
 public class DataExport {
 
+    public static final int PUBLISH_BUFFER_SIZE = 100000;
+    public static final int SHORT_BUFFER_SIZE = 10;
+    public static final int CSV_BUFFER_SIZE = 1000000;
+    public static final int JSON_FILE_BUFFER_SIZE = 10000;
+
+    public static final int QUERY_TIMEOUT = 60;
+
     private Statement statement = null;
-    private UserInfo userInfo = null;
-    private StudyInfo studyInfo = null;
 
     /**
      * Build a DataExport object that connects to a sqlite database file
@@ -72,7 +77,7 @@ public class DataExport {
         try {
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + filename);
             statement = connection.createStatement();
-            statement.setQueryTimeout(60);
+            statement.setQueryTimeout(QUERY_TIMEOUT);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -119,7 +124,7 @@ public class DataExport {
         UserInfo userInfo = getUserInfo();
         StudyInfo studyInfo = getStudyInfo();
 
-        SQLiteIterator sqli = new SQLiteIterator(statement, id, 10000);
+        SQLiteIterator sqli = new SQLiteIterator(statement, id, JSON_FILE_BUFFER_SIZE);
 
         JSONDataRepresentation(writer, ds, userInfo, studyInfo, sqli, false);
     }
@@ -192,9 +197,10 @@ public class DataExport {
         try {
             String filename = getOutputFilename(id);
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".csv", false), "utf-8"));
-            SQLiteIterator sqli = new SQLiteIterator(statement, id, 10000);
+            SQLiteIterator sqli = new SQLiteIterator(statement, id, CSV_BUFFER_SIZE);
             while(sqli.hasNext()) {
                 List<DataType> result = sqli.next();
+                System.out.println("Iterator:" + result.size());
                 for (DataType dt : result) {
                     writer.write(DataTypeConverter.DataTypeToString(dt) + "\n");
                 }
@@ -212,9 +218,6 @@ public class DataExport {
      * @return populated UserInfo object
      */
     private UserInfo getUserInfo() {
-        if (this.userInfo != null) {
-            return this.userInfo;
-        }
         UserInfo result = new UserInfo();
 
         int streamID = -1;
@@ -228,7 +231,7 @@ public class DataExport {
         }
 
         if (streamID >= 0) {
-            SQLiteIterator sqli = new SQLiteIterator(statement, streamID, 10000);
+            SQLiteIterator sqli = new SQLiteIterator(statement, streamID, SHORT_BUFFER_SIZE);
             while(sqli.hasNext()) {
                 List<DataType> user = sqli.next();
                 for (DataType dt : user) {
@@ -242,7 +245,6 @@ public class DataExport {
                 }
             }
         }
-        this.userInfo = result;
         return result;
     }
 
@@ -253,9 +255,6 @@ public class DataExport {
      * @return populated StudyInfo object
      */
     private StudyInfo getStudyInfo() {
-        if (this.studyInfo != null) {
-            return this.studyInfo;
-        }
         StudyInfo result = new StudyInfo();
         int streamID = -1;
         try {
@@ -267,7 +266,7 @@ public class DataExport {
             e.printStackTrace();
         }
         if (streamID >= 0) {
-            SQLiteIterator sqli = new SQLiteIterator(statement, streamID, 10000);
+            SQLiteIterator sqli = new SQLiteIterator(statement, streamID, SHORT_BUFFER_SIZE);
             while(sqli.hasNext()) {
                 List<DataType> study = sqli.next();
                 for (DataType dt : study) {
@@ -281,7 +280,6 @@ public class DataExport {
                 }
             }
         }
-        this.studyInfo = result;
         return result;
     }
 
@@ -301,7 +299,6 @@ public class DataExport {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return ids;
     }
 
@@ -388,13 +385,16 @@ public class DataExport {
         UserInfo userInfo = getUserInfo();
         StudyInfo studyInfo = getStudyInfo();
 
-        SQLiteIterator sqli = new SQLiteIterator(statement, id, 10000000);
+        SQLiteIterator sqli = new SQLiteIterator(statement, id, PUBLISH_BUFFER_SIZE);
 
         boolean success = false;
         ByteOutputArray boa;
+        int count = 0;
         do {
+            System.out.print("Iteration: " + count++ + " ... ");
             boa = generateGzipJSON(userInfo, studyInfo, ds, sqli, true);
             success = publishData(request, boa.data);
+            System.out.println("Done");
             if (!success) {
                 return success;
             }
@@ -432,13 +432,13 @@ public class DataExport {
         post.setEntity(entity);
         HttpResponse response = null;
         try {
-            System.out.println("HTTP Request: " + hash);
+//            System.out.println("HTTP Request: " + hash);
             response = client.execute(post);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
-        System.out.println(response);
+//        System.out.println(response);
         return true;
     }
 
