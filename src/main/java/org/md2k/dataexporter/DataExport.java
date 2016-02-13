@@ -42,8 +42,8 @@ import org.md2k.cerebralcortex.CerebralCortexDataPackage;
 import org.md2k.cerebralcortex.StudyInfo;
 import org.md2k.cerebralcortex.TSV;
 import org.md2k.cerebralcortex.UserInfo;
+import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.source.datasource.DataSource;
-import org.md2k.datakitapi.datatype.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -59,7 +59,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class DataExport {
 
-    public static final int PUBLISH_BUFFER_SIZE = 100000;
+    public static final int PUBLISH_BUFFER_SIZE = 1000000;
     public static final int SHORT_BUFFER_SIZE = 10;
     public static final int CSV_BUFFER_SIZE = 1000000;
     public static final int JSON_FILE_BUFFER_SIZE = 10000;
@@ -83,10 +83,19 @@ public class DataExport {
         }
     }
 
-    public DataExport() {
-
+    /**
+     * Utility function to convert a byte[] to hex
+     *
+     * @param hash
+     * @return
+     */
+    private static String byteArray2Hex(final byte[] hash) {
+        Formatter formatter = new Formatter();
+        for (byte b : hash) {
+            formatter.format("%02x", b);
+        }
+        return formatter.toString();
     }
-
 
     /**
      * Generate JSON from query results
@@ -103,7 +112,6 @@ public class DataExport {
 
         return obj;
     }
-
 
     /**
      * Generate and write a data stream to file in the JSON format
@@ -128,13 +136,53 @@ public class DataExport {
         UserInfo userInfo = getUserInfo();
         StudyInfo studyInfo = getStudyInfo();
 
-        SQLiteIterator sqli = new SQLiteIterator(statement, id, JSON_FILE_BUFFER_SIZE);
-
-        JSONDataRepresentation(writer, ds, userInfo, studyInfo, sqli, false);
+        JSONHeader(writer, ds, userInfo, studyInfo);
+        if (getQueryIDs().contains(id)) {
+            SQLiteIterator sqli = new SQLiteIterator(statement, id, JSON_FILE_BUFFER_SIZE);
+            JSONDataRepresentation(writer, sqli, false);
+        } else if (getRAWIDs().contains(id)) {
+            SQLiteRAWIterator sqli = new SQLiteRAWIterator(statement, id, JSON_FILE_BUFFER_SIZE);
+            JSONDataRepresentation(writer, sqli, false);
+        }
+        JSONFooter(writer);
     }
 
-    private boolean JSONDataRepresentation(JsonWriter writer, DataSource ds, UserInfo userInfo, StudyInfo studyInfo, Iterator iter, boolean segmentData) throws IOException {
-        CerebralCortexDataPackage header = generateCerebralCortexHeader(userInfo,studyInfo,ds);
+    private void JSONRAWDataFileRepresentation(Integer id, JsonWriter writer) throws IOException {
+        DataSource ds = getDataSource(id);
+        UserInfo userInfo = getUserInfo();
+        StudyInfo studyInfo = getStudyInfo();
+
+        SQLiteRAWIterator sqliRAW = new SQLiteRAWIterator(statement, id, JSON_FILE_BUFFER_SIZE);
+        JSONHeader(writer, ds, userInfo, studyInfo);
+        JSONDataRepresentation(writer, sqliRAW, false);
+        JSONFooter(writer);
+    }
+
+    private void JSONFooter(JsonWriter writer) throws IOException {
+        writer.endArray();
+        writer.endObject();
+    }
+
+    private boolean JSONDataRepresentation(JsonWriter writer, Iterator iter, boolean segmentData) throws IOException {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        while(iter.hasNext()) {
+            List<DataType> result = (List<DataType>) iter.next();
+            System.out.println("Iterator:" + result.size());
+            for (DataType dt : result) {
+                TSV entry = new TSV(DataTypeConverter.DataTypeToString(dt));
+                gson.toJson(entry, TSV.class, writer);
+            }
+            if(segmentData) {
+                break;
+            }
+        }
+
+        return iter.hasNext();
+    }
+
+    private Gson JSONHeader(JsonWriter writer, DataSource ds, UserInfo userInfo, StudyInfo studyInfo) throws IOException {
+        CerebralCortexDataPackage header = generateCerebralCortexHeader(userInfo, studyInfo, ds);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         writer.beginObject();
@@ -147,23 +195,8 @@ public class DataExport {
 
         writer.name("data");
         writer.beginArray();
-
-        while(iter.hasNext()) {
-            List<DataType> result = (List<DataType>) iter.next();
-            for (DataType dt : result) {
-                TSV entry = new TSV(DataTypeConverter.DataTypeToString(dt));
-                gson.toJson(entry, TSV.class, writer);
-            }
-            if(segmentData) {
-                break;
-            }
-        }
-        writer.endArray();
-
-        writer.endObject();
-        return iter.hasNext();
+        return gson;
     }
-
 
     /**
      * Generate a Gzipped JSON byte array
@@ -180,7 +213,9 @@ public class DataExport {
             OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
             JsonWriter writer = new JsonWriter(osw);
             writer.setIndent("  ");
-            additionalData = JSONDataRepresentation(writer, ds, ui, si, iter, segmentData);
+            JSONHeader(writer, ds, ui, si);
+            additionalData = JSONDataRepresentation(writer, iter, segmentData);
+            JSONFooter(writer);
             writer.close();
             osw.close();
             gzip.close();
@@ -201,20 +236,33 @@ public class DataExport {
         try {
             String filename = getOutputFilename(id);
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".csv", false), "utf-8"));
-            SQLiteIterator sqli = new SQLiteIterator(statement, id, CSV_BUFFER_SIZE);
-            while(sqli.hasNext()) {
-                List<DataType> result = sqli.next();
-                System.out.println("Iterator:" + result.size());
-                for (DataType dt : result) {
-                    writer.write(DataTypeConverter.DataTypeToString(dt) + "\n");
+
+            if (getQueryIDs().contains(id)) {
+                SQLiteIterator sqli = new SQLiteIterator(statement, id, CSV_BUFFER_SIZE);
+                while (sqli.hasNext()) {
+                    List<DataType> result = sqli.next();
+                    System.out.println("Iterator:" + result.size());
+                    for (DataType dt : result) {
+                        writer.write(DataTypeConverter.DataTypeToString(dt) + "\n");
+                    }
+                }
+
+            } else if (getRAWIDs().contains(id)) {
+                SQLiteRAWIterator sqli = new SQLiteRAWIterator(statement, id, CSV_BUFFER_SIZE);
+                while (sqli.hasNext()) {
+                    List<DataType> result = sqli.next();
+                    System.out.println("Iterator:" + result.size());
+                    for (DataType dt : result) {
+                        writer.write(DataTypeConverter.DataTypeToString(dt) + "\n");
+                    }
                 }
             }
+
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Retrieve the user id from its data stream
@@ -252,7 +300,6 @@ public class DataExport {
         return result;
     }
 
-
     /**
      * Retrieve the study id and study name from its data stream
      *
@@ -287,7 +334,6 @@ public class DataExport {
         return result;
     }
 
-
     /**
      * Retrieve datasource ids from the database
      *
@@ -297,6 +343,42 @@ public class DataExport {
         List<Integer> ids = new ArrayList<Integer>();
         try {
             ResultSet rs = statement.executeQuery("Select ds_id from datasource");
+            while (rs.next()) {
+                ids.add(rs.getInt("ds_id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ids;
+    }
+
+    /**
+     * Retrieve datasource ids from the database
+     *
+     * @return List of ids
+     */
+    public List<Integer> getQueryIDs() {
+        List<Integer> ids = new ArrayList<Integer>();
+        try {
+            ResultSet rs = statement.executeQuery("Select datasource_id as ds_id from data group by datasource_id");
+            while (rs.next()) {
+                ids.add(rs.getInt("ds_id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ids;
+    }
+
+    /**
+     * Retrieve datasource ids from the database
+     *
+     * @return List of ids
+     */
+    public List<Integer> getRAWIDs() {
+        List<Integer> ids = new ArrayList<Integer>();
+        try {
+            ResultSet rs = statement.executeQuery("Select datasource_id as ds_id from rawdata group by datasource_id");
             while (rs.next()) {
                 ids.add(rs.getInt("ds_id"));
             }
@@ -356,20 +438,6 @@ public class DataExport {
         return result;
     }
 
-    /**
-     * Utility function to convert a byte[] to hex
-     *
-     * @param hash
-     * @return
-     */
-    private static String byteArray2Hex(final byte[] hash) {
-        Formatter formatter = new Formatter();
-        for (byte b : hash) {
-            formatter.format("%02x", b);
-        }
-        return formatter.toString();
-    }
-
     public boolean publishTimeSeriesDataStream(String requestURL, List<DataType> data, UserInfo ui, StudyInfo si, DataSource ds) {
         ListIterator<DataType> iter = data.listIterator();
         byte[] d = null;
@@ -423,6 +491,7 @@ public class DataExport {
             e.printStackTrace();
             return false;
         }
+
 
         CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpPost post = new HttpPost(request);

@@ -1,8 +1,9 @@
 package org.md2k.datakitapi.datatype;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -35,7 +36,34 @@ public class DataTypeDoubleArray extends DataType implements Serializable{
         super(timestamp);
         this.sample=sample;
     }
+
+    public DataTypeDoubleArray(long dateTime, double sample) {
+        this(dateTime, new double[1]);
+        this.sample[0] = sample;
+    }
     public double[] getSample(){
         return sample;
     }
+
+
+    public byte[] toRawBytes() {
+        byte[] data = new byte[sample.length * 8];
+
+        for (int i = 0; i < sample.length; i++) {
+            ByteBuffer.wrap(data, i * 8, 8).putDouble(sample[i]);
+        }
+
+        return data;
+    }
+
+    public DataTypeDoubleArray fromRawBytes(long timestamp, byte[] data) {
+
+        double[] sample = new double[data.length / 8];
+        for (int i = 0; i < sample.length; i++) {
+            sample[i] = ByteBuffer.wrap(data, i * 8, 8).getDouble();
+        }
+        return new DataTypeDoubleArray(timestamp, sample);
+
+    }
+
 }
