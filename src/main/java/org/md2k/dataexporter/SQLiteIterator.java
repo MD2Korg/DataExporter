@@ -25,8 +25,11 @@ package org.md2k.dataexporter;/*
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 import org.md2k.datakitapi.datatype.DataType;
 
+import java.io.ByteArrayInputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -38,6 +41,8 @@ import java.util.List;
 public class SQLiteIterator implements Iterator<List<DataType>> {
     private ResultSet rs;
     private int bufferSize;
+    private Kryo kryo = new Kryo();
+
     public SQLiteIterator(Statement statement, Integer id, int bufferSize) {
         this.bufferSize = bufferSize;
         try {
@@ -64,8 +69,11 @@ public class SQLiteIterator implements Iterator<List<DataType>> {
         try {
             while (result.size() < bufferSize && rs.next()) {
                 byte[] b = rs.getBytes("sample");
-                DataType dt = DataType.fromBytes(b);
+                Input input = new Input(new ByteArrayInputStream(b));
+                DataType dt = (DataType) kryo.readClassAndObject(input);
                 result.add(dt);
+
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
