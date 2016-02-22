@@ -1,8 +1,6 @@
 package org.md2k.datakitapi.source.platform;
 
-import org.md2k.datakitapi.Constants;
-
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -29,7 +27,6 @@ import org.md2k.datakitapi.Constants;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class PlatformId {
-    private static final long serialVersionUID = Constants.serialVersionUID;
     public static final String CHEST = "CHEST";
     public static final String LEFT_WRIST = "LEFT_WRIST";
     public static final String RIGHT_WRIST = "RIGHT_WRIST";

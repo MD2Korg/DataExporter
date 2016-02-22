@@ -1,6 +1,6 @@
 package org.md2k.datakitapi.datatype;
 
-import java.io.Serializable;
+
 import java.nio.ByteBuffer;
 
 /*
@@ -29,7 +29,7 @@ import java.nio.ByteBuffer;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataTypeDoubleArray extends DataType implements Serializable{
+public class DataTypeDoubleArray extends DataType {
     double[] sample;
 
     public DataTypeDoubleArray(long timestamp, double[] sample) {
@@ -37,10 +37,14 @@ public class DataTypeDoubleArray extends DataType implements Serializable{
         this.sample=sample;
     }
 
+    public DataTypeDoubleArray() {
+    }
+
     public DataTypeDoubleArray(long dateTime, double sample) {
         this(dateTime, new double[1]);
         this.sample[0] = sample;
     }
+
     public double[] getSample(){
         return sample;
     }

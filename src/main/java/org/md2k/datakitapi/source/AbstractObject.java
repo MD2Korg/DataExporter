@@ -1,12 +1,11 @@
 package org.md2k.datakitapi.source;
 
-import org.md2k.datakitapi.Constants;
+
 import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -32,29 +31,38 @@ import java.util.HashMap;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public abstract class AbstractObject implements Serializable{
-    private static final long serialVersionUID = Constants.serialVersionUID;
+public class AbstractObject {
     protected String type = null;
     protected String id = null;
     protected HashMap<String, String> metadata = null;
-    public String getType() {
-        return type;
+
+    public AbstractObject() {
+
     }
-    public String getId() {
-        return id;
-    }
-    public HashMap<String, String> getMetadata() {
-        return metadata;
-    }
-    public DataSourceBuilder toDataSourceBuilder(){
-        DataSourceBuilder dataSourceBuilder=new DataSourceBuilder();
-        dataSourceBuilder.setType(type).setId(id).setMetadata(metadata);
-        return dataSourceBuilder;
-    }
+
+
     public AbstractObject(AbstractObjectBuilder abstractObjectBuilder) {
         this.type = abstractObjectBuilder.type;
         this.id = abstractObjectBuilder.id;
         this.metadata = abstractObjectBuilder.metadata;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public HashMap<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public DataSourceBuilder toDataSourceBuilder() {
+        DataSourceBuilder dataSourceBuilder = new DataSourceBuilder();
+        dataSourceBuilder.setType(type).setId(id).setMetadata(metadata);
+        return dataSourceBuilder;
     }
 
 }

@@ -433,8 +433,18 @@ public class DataExport {
         try {
             ResultSet rs = statement.executeQuery("Select datasource from datasource where ds_id = " + id);
             while (rs.next()) {
+
+                byte[] buffer = new byte[]{(byte) 0x01, (byte) 0x00, (byte) 0x6f, (byte) 0x72, (byte) 0x67, (byte) 0x2e, (byte) 0x6d, (byte) 0x64, (byte) 0x32, (byte) 0x6b, (byte) 0x2e, (byte) 0x64, (byte) 0x61, (byte) 0x74, (byte) 0x61, (byte) 0x6b,
+                        (byte) 0x69, (byte) 0x74, (byte) 0x61, (byte) 0x70, (byte) 0x69, (byte) 0x2e, (byte) 0x64, (byte) 0x61, (byte) 0x74, (byte) 0x61, (byte) 0x74, (byte) 0x79, (byte) 0x70, (byte) 0x65, (byte) 0x2e, (byte) 0x44,
+                        (byte) 0x61, (byte) 0x74, (byte) 0x61, (byte) 0x54, (byte) 0x79, (byte) 0x70, (byte) 0x65, (byte) 0x49, (byte) 0x6e, (byte) 0x74, (byte) 0x41, (byte) 0x72, (byte) 0x72, (byte) 0x61, (byte) 0xf9, (byte) 0x01,
+                        (byte) 0xd8, (byte) 0xa8, (byte) 0xb7, (byte) 0xb4, (byte) 0xdf, (byte) 0x54, (byte) 0xff, (byte) 0xdb, (byte) 0xcc, (byte) 0x14, (byte) 0x01, (byte) 0x02, (byte) 0x01};
+                Input in = new Input(buffer);
+                DataType o = (DataType) kryo.readClassAndObject(in);
+
+
                 byte[] b = rs.getBytes("datasource");
                 Input input = new Input(new ByteArrayInputStream(b));
+                kryo.register(org.md2k.datakitapi.source.application.Application.class);
                 result = (DataSource) kryo.readClassAndObject(input);
             }
         } catch (SQLException e) {

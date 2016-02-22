@@ -27,5 +27,4 @@ package org.md2k.datakitapi;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Constants {
-    public static final long serialVersionUID = 2L;
 }

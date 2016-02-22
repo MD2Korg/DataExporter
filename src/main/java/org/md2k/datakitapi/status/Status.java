@@ -1,10 +1,12 @@
 package org.md2k.datakitapi.status;
 
-import org.md2k.datakitapi.Constants;
 
-import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -30,26 +32,66 @@ import java.io.Serializable;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class Status extends Object implements Serializable {
-    private static final long serialVersionUID = Constants.serialVersionUID;
+public class Status extends Object {
+    public static final int SUCCESS = 0;
+    public static final int DATASOURCE_EXIST = 1;
+    public static final int DATASOURCE_MULTIPLE_EXIST=2;
+    public static final int DATASOURCE_NOT_EXIST = 3;
+    public static final int DATASOURCE_INVALID =4;
+    public static final int DATASOURCE_ACTIVE =5;
+    public static final int INTERNAL_ERROR = -3;
+    public static final int ALREADY_SUBSCRIBED=7;
+    public static final int ERROR_NOT_INSTALLED = -1;
+    public static final int ERROR_BOUND = -2;
+    public static final int DATA_INVALID = 8;
+    private static Map<Integer, String> constantNames = null;
     int statusCode;
     String statusMessage;
+
 
     public Status(int statusCode, String statusMessage) {
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
     }
-    public Status(int statusCode){
-        this.statusCode=statusCode;
-        this.statusMessage= StatusCodes.getStatusCodeString(statusCode);
+
+    public Status(int statusCode) {
+        this.statusCode = statusCode;
+        this.statusMessage = getStatusCodeString(statusCode);
     }
-    public String getStatusMessage(){
+
+    public static String generateStatusString(int statusCode) {
+        return getStatusCodeString(statusCode);
+    }
+
+    public static String getStatusCodeString(int statusCode) {
+        String constNames = "Unknown";
+        if (constantNames == null) {
+            Map<Integer, String> cNames = new HashMap<>();
+            for (Field field : Status.class.getDeclaredFields()) {
+                if ((field.getModifiers() & (Modifier.FINAL | Modifier.STATIC)) != 0 && int.class == field.getType()) {
+                    // only record final static int fields
+                    try {
+                        cNames.put((Integer) field.get(null), field.getName());
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            constantNames = cNames;
+        }
+        return constantNames.get(statusCode);
+    }
+
+    public String getStatusMessage() {
         return statusMessage;
     }
-    public Status getStatus(){
+
+    public Status getStatus() {
         return this;
     }
+
     public int getStatusCode() {
         return statusCode;
     }
+
 }

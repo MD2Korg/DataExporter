@@ -1,11 +1,10 @@
 package org.md2k.datakitapi.source.datasource;
 
-import org.md2k.datakitapi.Constants;
+
 import org.md2k.datakitapi.status.Status;
 
-import java.io.Serializable;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -31,10 +30,9 @@ import java.io.Serializable;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataSourceClient implements Serializable {
-    private static final long serialVersionUID = Constants.serialVersionUID;
-    private int ds_id;
+public class DataSourceClient {
     DataSource dataSource;
+    private int ds_id;
     private Status status;
 
     public DataSourceClient(int ds_id, DataSource dataSource, Status status) {
@@ -54,4 +52,5 @@ public class DataSourceClient implements Serializable {
     public DataSource getDataSource() {
         return dataSource;
     }
+
 }

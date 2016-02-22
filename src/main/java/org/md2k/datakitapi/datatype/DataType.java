@@ -1,11 +1,9 @@
 package org.md2k.datakitapi.datatype;
 
-import org.md2k.datakitapi.Constants;
+
 import org.md2k.datakitapi.time.DateTime;
 
-import java.io.*;
-
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -31,8 +29,7 @@ import java.io.*;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataType implements Serializable{
-    private static final long serialVersionUID = Constants.serialVersionUID;
+public class DataType {
     long dateTime;
     long offset;
 
@@ -40,62 +37,12 @@ public class DataType implements Serializable{
         this.dateTime = dateTime;
         this.offset= DateTime.getTimeZoneOffset();
     }
+
+    public DataType() {
+    }
+
+
     public long getDateTime() {
         return dateTime;
-    }
-
-    public byte[] toBytes() {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject(this);
-            return bos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-            try {
-                bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
-        return null;
-    }
-
-    public static DataType fromBytes(byte[] dataSourceByteArray) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(dataSourceByteArray);
-        DataType dataSource = null;
-        ObjectInput in = null;
-        try {
-            in = new ObjectInputStream(bis);
-            dataSource = (DataType) in.readObject();
-            return dataSource;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                bis.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
-        return null;
     }
 }

@@ -1,6 +1,6 @@
 package org.md2k.datakitapi.messagehandler;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -37,4 +37,7 @@ public class MessageType {
     public static final int QUERY = 8;
     public static final int FIND =9;
     public static final int SUBSCRIBED_DATA=10;
+    public static final int INTERNAL_ERROR = 11;
+    public static final int QUERYPRIMARYKEY = 12;
+    public static final int INSERT_HIGH_FREQUENCY = 13;
 }

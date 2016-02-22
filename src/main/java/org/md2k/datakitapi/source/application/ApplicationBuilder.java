@@ -1,11 +1,9 @@
 package org.md2k.datakitapi.source.application;
 
-import org.md2k.datakitapi.Constants;
 import org.md2k.datakitapi.source.AbstractObjectBuilder;
 
-import java.io.Serializable;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -31,8 +29,16 @@ import java.io.Serializable;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class ApplicationBuilder extends AbstractObjectBuilder implements Serializable {
-    private static final long serialVersionUID = Constants.serialVersionUID;
+public class ApplicationBuilder extends AbstractObjectBuilder {
+    public ApplicationBuilder() {
+    }
+
+    public ApplicationBuilder(Application application) {
+        this.metadata = application.getMetadata();
+        this.type = application.getType();
+        this.id = application.getId();
+    }
+
     public ApplicationBuilder setType(String type) {
         super.setType(type);
         return this;
@@ -46,13 +52,6 @@ public class ApplicationBuilder extends AbstractObjectBuilder implements Seriali
     public ApplicationBuilder setMetadata(String key, String value) {
         super.setMetadata(key, value);
         return this;
-    }
-    public ApplicationBuilder(){
-    }
-    public ApplicationBuilder(Application application){
-        this.metadata=application.getMetadata();
-        this.type=application.getType();
-        this.id=application.getId();
     }
 
     public Application build() {

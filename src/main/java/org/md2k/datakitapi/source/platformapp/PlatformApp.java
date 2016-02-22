@@ -1,8 +1,9 @@
 package org.md2k.datakitapi.source.platformapp;
 
+
 import org.md2k.datakitapi.source.AbstractObject;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -32,4 +33,9 @@ public class PlatformApp extends AbstractObject {
     PlatformApp(PlatformAppBuilder platformAppBuilder){
         super(platformAppBuilder);
     }
+
+    public PlatformApp() {
+
+    }
+
 }
