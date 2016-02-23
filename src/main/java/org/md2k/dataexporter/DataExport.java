@@ -328,7 +328,7 @@ public class DataExport {
                     String[] json = DataTypeConverter.DataTypeToString(dt).split(",", 2);
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     StudyInfo si = gson.fromJson(json[1], StudyInfo.class);
-                    if (!si.study_id.isEmpty()) {
+                    if (!si.id.isEmpty()) {
                         return si;
                     }
 

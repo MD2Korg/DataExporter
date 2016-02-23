@@ -27,8 +27,8 @@ package org.md2k.cerebralcortex;/*
 
 public class StudyInfo {
 
-    public String study_id;
-    public String study_name;
+    public String id;
+    public String name;
 
     public StudyInfo() {
 
