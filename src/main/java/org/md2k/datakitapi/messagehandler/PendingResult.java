@@ -1,6 +1,6 @@
 package org.md2k.datakitapi.messagehandler;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -27,7 +27,7 @@ package org.md2k.datakitapi.messagehandler;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public interface PendingResult<R> {
-    abstract R await();
+    R await();
 
-    abstract void setResultCallback(ResultCallback<R> callback);
+    void setResultCallback(ResultCallback<R> callback);
 }

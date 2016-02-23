@@ -2,7 +2,7 @@ package org.md2k.datakitapi.messagehandler;
 
 import org.md2k.datakitapi.datatype.DataType;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -29,5 +29,5 @@ import org.md2k.datakitapi.datatype.DataType;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public interface OnReceiveListener {
-    public abstract void onReceived(DataType dataType);
+    void onReceived(DataType dataType);
 }

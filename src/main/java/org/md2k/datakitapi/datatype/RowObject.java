@@ -1,11 +1,8 @@
-package org.md2k.datakitapi.source.application;
-
-
-import org.md2k.datakitapi.source.AbstractObject;
+package org.md2k.datakitapi.datatype;
 
 /*
- * Copyright (c) 2015, The University of Memphis, MD2K Center
- * - Syed Monowar Hossain <monowar.hossain@gmail.com>
+ * Copyright (c) 2016, The University of Memphis, MD2K Center
+ * - Timothy W. Hnat <twhnat@memphis.edu>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,12 +26,15 @@ import org.md2k.datakitapi.source.AbstractObject;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class Application extends AbstractObject {
-    Application(ApplicationBuilder applicationBuilder) {
-        super(applicationBuilder);
+
+
+public class RowObject {
+    public DataType data;
+    public long rowKey;
+
+    public RowObject(long aLong, DataType dt) {
+        rowKey = aLong;
+        data = dt;
     }
 
-    public Application() {
-
-    }
 }

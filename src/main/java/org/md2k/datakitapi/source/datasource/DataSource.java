@@ -1,16 +1,15 @@
 package org.md2k.datakitapi.source.datasource;
 
-import org.md2k.datakitapi.Constants;
+
 import org.md2k.datakitapi.source.AbstractObject;
 import org.md2k.datakitapi.source.application.Application;
 import org.md2k.datakitapi.source.platform.Platform;
 import org.md2k.datakitapi.source.platformapp.PlatformApp;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
+/*
  * Copyright (c) 2015, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
@@ -36,13 +35,16 @@ import java.util.HashMap;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class DataSource extends AbstractObject implements Serializable {
-    private static final long serialVersionUID = Constants.serialVersionUID;
+public class DataSource extends AbstractObject {
     private Platform platform = null;
     private PlatformApp platformApp = null;
     private Application application = null;
     private boolean persistent = true;
-    private ArrayList<HashMap<String,String>> dataDescriptors =null;
+    private ArrayList<HashMap<String, String>> dataDescriptors = null;
+
+    public DataSource() {
+
+    }
 
 
     DataSource(DataSourceBuilder dataSourceBuilder) {
@@ -51,11 +53,12 @@ public class DataSource extends AbstractObject implements Serializable {
         this.platformApp = dataSourceBuilder.platformApp;
         this.application = dataSourceBuilder.application;
         this.persistent = dataSourceBuilder.persistent;
-        this.dataDescriptors=dataSourceBuilder.dataDescriptors;
+        this.dataDescriptors = dataSourceBuilder.dataDescriptors;
     }
-    public DataSourceBuilder toDataSourceBuilder(){
+
+    public DataSourceBuilder toDataSourceBuilder() {
         DataSourceBuilder dataSourceBuilder = super.toDataSourceBuilder();
-        dataSourceBuilder=dataSourceBuilder.
+        dataSourceBuilder = dataSourceBuilder.
                 setPlatform(platform).setPlatformApp(platformApp).setApplication(application).setPersistent(persistent).setDataDescriptors(dataDescriptors);
         return dataSourceBuilder;
     }
@@ -76,63 +79,8 @@ public class DataSource extends AbstractObject implements Serializable {
         return persistent;
     }
 
-    public byte[] toBytes() {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject(this);
-            return bos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-            try {
-                bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
-        return null;
-    }
-
     public ArrayList<HashMap<String, String>> getDataDescriptors() {
         return dataDescriptors;
-    }
-
-    public static DataSource fromBytes(byte[] dataSourceByteArray) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(dataSourceByteArray);
-        DataSource dataSource = null;
-        ObjectInput in = null;
-        try {
-            in = new ObjectInputStream(bis);
-            dataSource = (DataSource) in.readObject();
-            return dataSource;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                bis.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
-        return null;
     }
 }
 

@@ -27,6 +27,8 @@ package org.md2k.dataexporter;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
@@ -67,6 +69,8 @@ public class DataExport {
     public static final int QUERY_TIMEOUT = 60;
 
     private Statement statement = null;
+
+    private Kryo kryo = new Kryo();
 
     /**
      * Build a DataExport object that connects to a sqlite database file
@@ -324,7 +328,7 @@ public class DataExport {
                     String[] json = DataTypeConverter.DataTypeToString(dt).split(",", 2);
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     StudyInfo si = gson.fromJson(json[1], StudyInfo.class);
-                    if (!si.study_id.isEmpty()) {
+                    if (!si.id.isEmpty()) {
                         return si;
                     }
 
@@ -430,7 +434,8 @@ public class DataExport {
             ResultSet rs = statement.executeQuery("Select datasource from datasource where ds_id = " + id);
             while (rs.next()) {
                 byte[] b = rs.getBytes("datasource");
-                result = DataSource.fromBytes(b);
+                Input input = new Input(new ByteArrayInputStream(b));
+                result = (DataSource) kryo.readClassAndObject(input);
             }
         } catch (SQLException e) {
             e.printStackTrace();
