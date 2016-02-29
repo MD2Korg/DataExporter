@@ -28,11 +28,14 @@ package org.md2k.datakitapi.datatype;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class DataTypeByteArray extends DataType {
-    private byte[] sample;
+    byte[] sample;
 
     public DataTypeByteArray(long timestamp, byte[] sample) {
         super(timestamp);
         this.sample=sample;
+    }
+
+    public DataTypeByteArray() {
     }
 
     public byte[] getSample(){

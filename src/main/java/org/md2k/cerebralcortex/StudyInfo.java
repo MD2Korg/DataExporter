@@ -30,4 +30,7 @@ public class StudyInfo {
     public String id;
     public String name;
 
+    public StudyInfo() {
+
+    }
 }

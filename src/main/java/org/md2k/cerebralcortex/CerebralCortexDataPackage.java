@@ -36,4 +36,8 @@ public class CerebralCortexDataPackage {
     public UserInfo userinfo;
     public StudyInfo studyinfo;
     public DataSource datasource;
+
+    public CerebralCortexDataPackage() {
+
+    }
 }

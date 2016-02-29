@@ -27,5 +27,7 @@ package org.md2k.cerebralcortex;/*
 
 public class UserInfo {
     public String user_id;
+    public UserInfo() {
 
+    }
 }
