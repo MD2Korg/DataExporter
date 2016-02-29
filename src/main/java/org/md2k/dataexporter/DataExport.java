@@ -294,7 +294,7 @@ public class DataExport {
                     String[] json = DataTypeConverter.dataTypeToString(dt).split(",", 2);
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     UserInfo ui = gson.fromJson(json[1], UserInfo.class);
-                    if (!ui.user_id.isEmpty()) {
+                    if (!ui.uuid.isEmpty()) {
                         return ui;
                     }
 
