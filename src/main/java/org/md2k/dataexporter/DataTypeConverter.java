@@ -28,7 +28,7 @@ package org.md2k.dataexporter;/*
 import org.md2k.datakitapi.datatype.*;
 
 public class DataTypeConverter {
-    public static String DataTypeToString(DataType dt) {
+    public static String dataTypeToString(DataType dt) {
         String temp = "";
         if (dt instanceof DataTypeBoolean) {
             temp = Long.toString(dt.getDateTime());

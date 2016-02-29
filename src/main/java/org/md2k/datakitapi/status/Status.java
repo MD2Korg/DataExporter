@@ -32,7 +32,7 @@ import java.util.Map;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class Status extends Object {
+public class Status {
     public static final int SUCCESS = 0;
     public static final int DATASOURCE_EXIST = 1;
     public static final int DATASOURCE_MULTIPLE_EXIST=2;
@@ -45,8 +45,8 @@ public class Status extends Object {
     public static final int ERROR_BOUND = -2;
     public static final int DATA_INVALID = 8;
     private static Map<Integer, String> constantNames = null;
-    int statusCode;
-    String statusMessage;
+    private int statusCode;
+    private String statusMessage;
 
 
     public Status(int statusCode, String statusMessage) {
@@ -64,7 +64,6 @@ public class Status extends Object {
     }
 
     public static String getStatusCodeString(int statusCode) {
-        String constNames = "Unknown";
         if (constantNames == null) {
             Map<Integer, String> cNames = new HashMap<>();
             for (Field field : Status.class.getDeclaredFields()) {
