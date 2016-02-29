@@ -127,7 +127,7 @@ public class DataExport {
             String filename = getOutputFilename(id);
             JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(filename + ".json", false), "utf-8"));
             writer.setIndent("  ");
-            createJSONDataFileRepresentation(id, writer);
+            JSONDataFileRepresentation(id, writer);
             writer.close();
 
         } catch (Exception e) {
@@ -135,20 +135,20 @@ public class DataExport {
         }
     }
 
-    private void createJSONDataFileRepresentation(Integer id, JsonWriter writer) throws IOException {
+    private void JSONDataFileRepresentation(Integer id, JsonWriter writer) throws IOException {
         DataSource ds = getDataSource(id);
         UserInfo userInfo = getUserInfo();
         StudyInfo studyInfo = getStudyInfo();
 
-        createJSONHeader(writer, ds, userInfo, studyInfo);
+        JSONHeader(writer, ds, userInfo, studyInfo);
         if (getQueryIDs().contains(id)) {
             SQLiteIterator sqli = new SQLiteIterator(statement, id, JSON_FILE_BUFFER_SIZE);
-            createJSONDataRepresentation(writer, sqli, false);
+            JSONDataRepresentation(writer, sqli, false);
         } else if (getRAWIDs().contains(id)) {
             SQLiteRAWIterator sqli = new SQLiteRAWIterator(statement, id, JSON_FILE_BUFFER_SIZE);
-            createJSONDataRepresentation(writer, sqli, false);
+            JSONDataRepresentation(writer, sqli, false);
         }
-        createJSONFooter(writer);
+        JSONFooter(writer);
     }
 
     private void JSONRAWDataFileRepresentation(Integer id, JsonWriter writer) throws IOException {
@@ -157,17 +157,17 @@ public class DataExport {
         StudyInfo studyInfo = getStudyInfo();
 
         SQLiteRAWIterator sqliRAW = new SQLiteRAWIterator(statement, id, JSON_FILE_BUFFER_SIZE);
-        createJSONHeader(writer, ds, userInfo, studyInfo);
-        createJSONDataRepresentation(writer, sqliRAW, false);
-        createJSONFooter(writer);
+        JSONHeader(writer, ds, userInfo, studyInfo);
+        JSONDataRepresentation(writer, sqliRAW, false);
+        JSONFooter(writer);
     }
 
-    private void createJSONFooter(JsonWriter writer) throws IOException {
+    private void JSONFooter(JsonWriter writer) throws IOException {
         writer.endArray();
         writer.endObject();
     }
 
-    private boolean createJSONDataRepresentation(JsonWriter writer, Iterator iter, boolean segmentData) throws IOException {
+    private boolean JSONDataRepresentation(JsonWriter writer, Iterator iter, boolean segmentData) throws IOException {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         while(iter.hasNext()) {
@@ -185,7 +185,7 @@ public class DataExport {
         return iter.hasNext();
     }
 
-    private Gson createJSONHeader(JsonWriter writer, DataSource ds, UserInfo userInfo, StudyInfo studyInfo) throws IOException {
+    private Gson JSONHeader(JsonWriter writer, DataSource ds, UserInfo userInfo, StudyInfo studyInfo) throws IOException {
         CerebralCortexDataPackage header = generateCerebralCortexHeader(userInfo, studyInfo, ds);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -217,9 +217,9 @@ public class DataExport {
             OutputStreamWriter osw = new OutputStreamWriter(gzip, StandardCharsets.UTF_8);
             JsonWriter writer = new JsonWriter(osw);
             writer.setIndent("  ");
-            createJSONHeader(writer, ds, ui, si);
-            additionalData = createJSONDataRepresentation(writer, iter, segmentData);
-            createJSONFooter(writer);
+            JSONHeader(writer, ds, ui, si);
+            additionalData = JSONDataRepresentation(writer, iter, segmentData);
+            JSONFooter(writer);
             writer.close();
             osw.close();
             gzip.close();

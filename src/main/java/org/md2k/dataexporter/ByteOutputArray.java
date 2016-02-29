@@ -28,8 +28,8 @@ package org.md2k.dataexporter;
  */
 
 public class ByteOutputArray {
-    public boolean additionalData;
-    public byte[] data;
+    boolean additionalData;
+    byte[] data;
 
     public ByteOutputArray(byte[] bytes, boolean additionalData) {
         data = bytes;

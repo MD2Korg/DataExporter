@@ -28,12 +28,16 @@ package org.md2k.datakitapi.datatype;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class DataTypeBoolean extends DataType {
-    private boolean sample;
+    boolean sample;
 
     public DataTypeBoolean(long timestamp, boolean sample) {
         super(timestamp);
         this.sample=sample;
     }
+
+    public DataTypeBoolean() {
+    }
+
 
     public boolean getSample(){
         return sample;

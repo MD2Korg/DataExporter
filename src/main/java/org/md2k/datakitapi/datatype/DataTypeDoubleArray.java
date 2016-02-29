@@ -30,13 +30,15 @@ import java.nio.ByteBuffer;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class DataTypeDoubleArray extends DataType {
-    private double[] sample;
+    double[] sample;
 
     public DataTypeDoubleArray(long timestamp, double[] sample) {
         super(timestamp);
         this.sample=sample;
     }
 
+    public DataTypeDoubleArray() {
+    }
 
     public DataTypeDoubleArray(long dateTime, double sample) {
         this(dateTime, new double[1]);
