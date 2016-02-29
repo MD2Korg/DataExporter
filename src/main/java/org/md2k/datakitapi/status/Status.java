@@ -45,8 +45,9 @@ public class Status extends Object {
     public static final int ERROR_BOUND = -2;
     public static final int DATA_INVALID = 8;
     private static Map<Integer, String> constantNames = null;
-    int statusCode;
-    String statusMessage;
+
+    private int statusCode;
+    private String statusMessage;
 
 
     public Status(int statusCode, String statusMessage) {

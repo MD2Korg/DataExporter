@@ -28,14 +28,11 @@ package org.md2k.datakitapi.datatype;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class DataTypeDouble extends DataType {
-    double sample;
+    private double sample;
 
     public DataTypeDouble(long timestamp, double sample) {
         super(timestamp);
         this.sample = sample;
-    }
-
-    public DataTypeDouble() {
     }
 
     public double getSample() {

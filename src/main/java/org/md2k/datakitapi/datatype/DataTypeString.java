@@ -28,14 +28,11 @@ package org.md2k.datakitapi.datatype;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class DataTypeString extends DataType {
-    String sample;
+    private String sample;
 
     public DataTypeString(long timestamp, String sample) {
         super(timestamp);
         this.sample=sample;
-    }
-
-    public DataTypeString() {
     }
 
     public String getSample(){

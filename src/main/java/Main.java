@@ -70,31 +70,28 @@ public class Main {
                 // automatically generate the help statement
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "java -jar dataexporter.jar", options, true);
-                System.exit(0);
-            }
+            } else {
 
+                DataExport de = new DataExport(line.getOptionValue("database"));
 
-            DataExport de = new DataExport(line.getOptionValue("database"));
-
-            List<Integer> ids = de.getIDs();
-            for (Integer id : ids) {
-                System.out.println("Exporting data stream: " + id);
-                if(line.hasOption("publish")) {
-                    if (de.publishGzipJSONData(line.getOptionValue("publish"), id)) {
-                        System.out.println("Success");
-                    } else {
-                        System.out.println("Failure");
+                List<Integer> ids = de.getIDs();
+                for (Integer id : ids) {
+                    System.out.println("Exporting data stream: " + id);
+                    if (line.hasOption("publish")) {
+                        if (de.publishGzipJSONData(line.getOptionValue("publish"), id)) {
+                            System.out.println("Success");
+                        } else {
+                            System.out.println("Failure");
+                        }
+                    }
+                    if (line.hasOption("csv")) {
+                        de.writeCSVDataFile(id);
+                    }
+                    if (line.hasOption("json")) {
+                        de.writeJSONDataFile(id);
                     }
                 }
-                if(line.hasOption("csv")) {
-                    de.writeCSVDataFile(id);
-                }
-                if(line.hasOption("json")) {
-                    de.writeJSONDataFile(id);
-                }
             }
-
-
         }
         catch( ParseException exp ) {
             // oops, something went wrong
