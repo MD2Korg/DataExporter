@@ -14,7 +14,7 @@ notifications:
   slack:
     secure: qpNqczXw6sfYKOTABJwBicrRoJEi4Fzh7qet2j0WtnlnD03VOymkTTS/M1tooEq+sOXPRuMdQmQkiZiHzButHOI37Ofgd2j2J2UtIdjq0IRBiOytBvyrM+IIbXIBX0pqvv/T1DnMv8TlT7A/vZYx+YJQLBdRID44IWrR3E2n8s1aTr6Nq+cNaVCyuX+mlgco3VJ1i93J9/9P/dI0J0Di4qmBmG3UxSSOrXrgpsqQYk/3A6OGr/m8Au8NYmOWI6Vd9kx7pe+nBCKr/ybYwIcpMcDJDP+KO4BPvFEzoAEs9+qctwMVRTh65hbhf9XBjEzPU5Zi7ygvtsxKCLCMz9+sX6VcSCejPb8ALVjNUre3Ksuaqn2wI7cZL109y/ly3PA2ta9WVfZ8q+e4hldlvcCH3UynS3ZcIQJTI8w+/cBaJMkW5LU3nEkSBJ+WoixZnryWF41IwBVK1E6qBtAAuiqmgxvbSwpP35oBX3ejU57ixVhN/E+j/B/wJJpfRMoL2eYpKHEgIOzg4TCRF8thUXS7vDGLAfy1nsZgRQ7N0QqNSkCXjWjp1kvr0Is3CyxfH/yOAa8sAFYI+b7E32Zl3rSY55NLPzHirkqxkor4jQwDDZ+IJagEHII8SsXfeLohNWIiyr5wYDqMHplbnHKP/y5b0OjZW5EPeeVgnrEoc+DfVoY=
 before_deploy:
-  - ./gradlew fatjar
+  - gradle fatjar
 deploy:
   file_glob: true
   provider: releases
