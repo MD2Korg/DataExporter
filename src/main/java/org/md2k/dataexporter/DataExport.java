@@ -131,6 +131,7 @@ public class DataExport {
             writer.close();
 
         } catch (Exception e) {
+            System.err.println("DataStream ID: " + id);
             e.printStackTrace();
         }
     }
@@ -174,7 +175,8 @@ public class DataExport {
             List<DataType> result = (List<DataType>) iter.next();
             System.out.println("Iterator:" + result.size());
             for (DataType dt : result) {
-                TSV entry = new TSV(DataTypeConverter.dataTypeToString(dt));
+//                TSV entry = new TSV(DataTypeConverter.dataTypeToString(dt));
+                TSV entry = new TSV(dt.getDateTime(), DataTypeConverter.dataTypeToJSON(dt));
                 gson.toJson(entry, TSV.class, writer);
             }
             if(segmentData) {

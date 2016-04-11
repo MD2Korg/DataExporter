@@ -1,19 +1,21 @@
-package org.md2k.cerebralcortex;
+package org.md2k.datakitapi.datatype;
+
+import com.google.gson.JsonArray;
 
 /*
- * Copyright (c) 2016, The University of Memphis, MD2K Center
- * - Timothy Hnat <twhnat@memphis.edu>
+ * Copyright (c) 2015, The University of Memphis, MD2K Center
+ * - Syed Monowar Hossain <monowar.hossain@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  *
  * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,30 +28,19 @@ package org.md2k.cerebralcortex;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+public class DataTypeJSONObjectArray extends DataType {
 
-import com.google.gson.JsonArray;
+    JsonArray sample;
 
-public class TSV {
-    public long timestamp;
-    public JsonArray values = new JsonArray();
-
-    public TSV(String s) {
-        boolean ts = false;
-        String val = "";
-        for(String st: s.split(",")) {
-            if (!ts) {
-                timestamp = Long.valueOf(st.trim());
-                ts = true;
-            } else {
-                val += st;
-            }
-        }
-        values.add(val);
+    public DataTypeJSONObjectArray(long timestamp, JsonArray sample) {
+        super(timestamp);
+        this.sample = sample;
     }
 
-    public TSV(long time, JsonArray data) {
-        timestamp = time;
-        values = data;
+    public DataTypeJSONObjectArray() {
     }
 
+    public JsonArray getSample() {
+        return sample;
+    }
 }
