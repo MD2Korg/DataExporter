@@ -280,7 +280,7 @@ public class DataExport {
 
         int streamID = -1;
         try {
-            ResultSet rs = statement.executeQuery("select ds_id from datasource where datasource.datasource_type=='USER_INFO'");
+            ResultSet rs = statement.executeQuery("select ds_id from datasources where datasources.datasource_type=='USER_INFO'");
             while (rs.next()) {
                 streamID = rs.getInt("ds_id");
             }
@@ -315,7 +315,7 @@ public class DataExport {
         StudyInfo result = new StudyInfo();
         int streamID = -1;
         try {
-            ResultSet rs = statement.executeQuery("select ds_id from datasource where datasource.datasource_type=='STUDY_INFO'");
+            ResultSet rs = statement.executeQuery("select ds_id from datasources where datasources.datasource_type=='STUDY_INFO'");
             while (rs.next()) {
                 streamID = rs.getInt("ds_id");
             }
@@ -348,7 +348,7 @@ public class DataExport {
     public List<Integer> getIDs() {
         List<Integer> ids = new ArrayList<Integer>();
         try {
-            ResultSet rs = statement.executeQuery("Select ds_id from datasource");
+            ResultSet rs = statement.executeQuery("Select ds_id from datasources");
             while (rs.next()) {
                 ids.add(rs.getInt("ds_id"));
             }
@@ -404,7 +404,7 @@ public class DataExport {
         String filename = "";
         List<String> parameters = new ArrayList<String>();
         try {
-            ResultSet rs = statement.executeQuery("Select * from datasource where ds_id = " + id);
+            ResultSet rs = statement.executeQuery("Select * from datasources where ds_id = " + id);
             while (rs.next()) {
                 parameters.add(Integer.toString(rs.getInt("ds_id")));
                 parameters.add(rs.getString("datasource_id"));
@@ -433,7 +433,7 @@ public class DataExport {
     private DataSource getDataSource(Integer id) {
         DataSource result = null;
         try {
-            ResultSet rs = statement.executeQuery("Select datasource from datasource where ds_id = " + id);
+            ResultSet rs = statement.executeQuery("Select datasource from datasources where ds_id = " + id);
             while (rs.next()) {
                 byte[] b = rs.getBytes("datasource");
                 Input input = new Input(new ByteArrayInputStream(b));
