@@ -26,6 +26,7 @@ package org.md2k.dataexporter;/*
  */
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
 import org.md2k.datakitapi.datatype.DataType;
 
@@ -46,7 +47,7 @@ public class SQLiteIterator implements Iterator<List<DataType>> {
     public SQLiteIterator(Statement statement, Integer id, int bufferSize) {
         this.bufferSize = bufferSize;
         try {
-            rs = statement.executeQuery("Select sample from data where datasource_id = " + id);
+            rs = statement.executeQuery("Select _id, sample from data where datasource_id = " + id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -66,12 +67,20 @@ public class SQLiteIterator implements Iterator<List<DataType>> {
     @Override
     public List<DataType> next() {
         List<DataType> result = new ArrayList<DataType>();
+        byte[] b;
+        Input input;
+        DataType dt;
         try {
             while (result.size() < bufferSize && rs.next()) {
-                byte[] b = rs.getBytes("sample");
-                Input input = new Input(new ByteArrayInputStream(b));
-                DataType dt = (DataType) kryo.readClassAndObject(input);
-                result.add(dt);
+                b = rs.getBytes("sample");
+                input = new Input(new ByteArrayInputStream(b));
+                try {
+                    dt = (DataType) kryo.readClassAndObject(input);
+                    result.add(dt);
+                } catch (KryoException ke) {
+                    System.err.println("KryoException: " + rs.getLong("_id"));
+                    ke.printStackTrace();
+                }
 
 
             }
