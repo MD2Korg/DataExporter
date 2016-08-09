@@ -241,9 +241,10 @@ public class DataExport {
     public void writeCSVDataFile(Integer id) {
         try {
             String filename = getOutputFilename(id);
-            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + ".csv", false), "utf-8"));
+
 
             if (getQueryIDs().contains(id)) {
+                Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + "_DATA.csv", false), "utf-8"));
                 SQLiteIterator sqli = new SQLiteIterator(statement, id, CSV_BUFFER_SIZE);
                 while (sqli.hasNext()) {
                     List<DataType> result = sqli.next();
@@ -252,8 +253,12 @@ public class DataExport {
                         writer.write(DataTypeConverter.dataTypeToString(dt) + "\n");
                     }
                 }
+                writer.close();
 
-            } else if (getRAWIDs().contains(id)) {
+            }
+
+            if (getRAWIDs().contains(id)) {
+                Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + "_RAW.csv", false), "utf-8"));
                 SQLiteRAWIterator sqli = new SQLiteRAWIterator(statement, id, CSV_BUFFER_SIZE);
                 while (sqli.hasNext()) {
                     List<DataType> result = sqli.next();
@@ -262,9 +267,10 @@ public class DataExport {
                         writer.write(DataTypeConverter.dataTypeToString(dt) + "\n");
                     }
                 }
+                writer.close();
             }
 
-            writer.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
