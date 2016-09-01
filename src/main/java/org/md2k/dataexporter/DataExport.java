@@ -61,12 +61,12 @@ import java.util.zip.GZIPOutputStream;
  */
 public class DataExport {
 
-    public static final int PUBLISH_BUFFER_SIZE = 1000000;
-    public static final int SHORT_BUFFER_SIZE = 10;
-    public static final int CSV_BUFFER_SIZE = 1000000;
-    public static final int JSON_FILE_BUFFER_SIZE = 10000;
+    private static final int PUBLISH_BUFFER_SIZE = 1000000;
+    private static final int SHORT_BUFFER_SIZE = 10;
+    private static final int CSV_BUFFER_SIZE = 1000000;
+    private static final int JSON_FILE_BUFFER_SIZE = 10000;
 
-    public static final int QUERY_TIMEOUT = 60;
+    private static final int QUERY_TIMEOUT = 60;
 
     private Statement statement = null;
 
@@ -145,21 +145,7 @@ public class DataExport {
         if (getQueryIDs().contains(id)) {
             SQLiteIterator sqli = new SQLiteIterator(statement, id, JSON_FILE_BUFFER_SIZE);
             createJSONDataRepresentation(writer, sqli, false);
-        } else if (getRAWIDs().contains(id)) {
-            SQLiteRAWIterator sqli = new SQLiteRAWIterator(statement, id, JSON_FILE_BUFFER_SIZE);
-            createJSONDataRepresentation(writer, sqli, false);
         }
-        createJSONFooter(writer);
-    }
-
-    private void createJSONRAWDataFileRepresentation(Integer id, JsonWriter writer) throws IOException {
-        DataSource ds = getDataSource(id);
-        UserInfo userInfo = getUserInfo();
-        StudyInfo studyInfo = getStudyInfo();
-
-        SQLiteRAWIterator sqliRAW = new SQLiteRAWIterator(statement, id, JSON_FILE_BUFFER_SIZE);
-        createJSONHeader(writer, ds, userInfo, studyInfo);
-        createJSONDataRepresentation(writer, sqliRAW, false);
         createJSONFooter(writer);
     }
 
@@ -175,7 +161,6 @@ public class DataExport {
             List<DataType> result = (List<DataType>) iter.next();
             System.out.println("Iterator:" + result.size());
             for (DataType dt : result) {
-//                TSV entry = new TSV(DataTypeConverter.dataTypeToString(dt));
                 TSV entry = new TSV(dt.getDateTime(), DataTypeConverter.dataTypeToJSON(dt));
                 gson.toJson(entry, TSV.class, writer);
             }
@@ -255,19 +240,6 @@ public class DataExport {
                 }
                 writer.close();
 
-            }
-
-            if (getRAWIDs().contains(id)) {
-                Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename + "_RAW.csv", false), "utf-8"));
-                SQLiteRAWIterator sqli = new SQLiteRAWIterator(statement, id, CSV_BUFFER_SIZE);
-                while (sqli.hasNext()) {
-                    List<DataType> result = sqli.next();
-                    System.out.println("Iterator:" + result.size());
-                    for (DataType dt : result) {
-                        writer.write(DataTypeConverter.dataTypeToString(dt) + "\n");
-                    }
-                }
-                writer.close();
             }
 
 
@@ -373,24 +345,6 @@ public class DataExport {
         List<Integer> ids = new ArrayList<Integer>();
         try {
             ResultSet rs = statement.executeQuery("Select datasource_id as ds_id from data group by datasource_id");
-            while (rs.next()) {
-                ids.add(rs.getInt("ds_id"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return ids;
-    }
-
-    /**
-     * Retrieve datasource ids from the database
-     *
-     * @return List of ids
-     */
-    public List<Integer> getRAWIDs() {
-        List<Integer> ids = new ArrayList<Integer>();
-        try {
-            ResultSet rs = statement.executeQuery("Select datasource_id as ds_id from rawdata group by datasource_id");
             while (rs.next()) {
                 ids.add(rs.getInt("ds_id"));
             }

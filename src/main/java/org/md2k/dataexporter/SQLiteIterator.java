@@ -34,9 +34,9 @@ import java.io.ByteArrayInputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 public class SQLiteIterator implements Iterator<List<DataType>> {
@@ -47,7 +47,7 @@ public class SQLiteIterator implements Iterator<List<DataType>> {
     public SQLiteIterator(Statement statement, Integer id, int bufferSize) {
         this.bufferSize = bufferSize;
         try {
-            rs = statement.executeQuery("Select _id, sample from data where datasource_id = " + id);
+            rs = statement.executeQuery("Select _id, datasource_id, datetime, sample from data where datasource_id = " + id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -78,8 +78,12 @@ public class SQLiteIterator implements Iterator<List<DataType>> {
                     dt = (DataType) kryo.readClassAndObject(input);
                     result.add(dt);
                 } catch (KryoException ke) {
-                    System.err.println("KryoException: " + rs.getLong("_id"));
-                    ke.printStackTrace();
+                    Date date = new Date(rs.getLong("dateTime"));
+                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                    format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+
+                    System.err.println("KryoException: (" + rs.getLong("_id") + ", " + rs.getString("datasource_id") + ", " + rs.getLong("dateTime") + ", " + format.format(date) + ")");
+//                    ke.printStackTrace();
                 }
 
 

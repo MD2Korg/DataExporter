@@ -53,9 +53,9 @@ public class Main {
         Option csvFlag = new Option("c", "csv", false, "enable CSV file output");
         options.addOption(csvFlag);
 
-        Option publish = new Option("p", "publish", true, "configure publishing to webservice");
-        publish.setArgName("URL");
-        options.addOption(publish);
+//        Option publish = new Option("p", "publish", true, "configure publishing to webservice");
+//        publish.setArgName("URL");
+//        options.addOption(publish);
 
         Option help = new Option("h", "help", false, "print this message" );
         options.addOption(help);
@@ -77,13 +77,13 @@ public class Main {
                 List<Integer> ids = de.getIDs();
                 for (Integer id : ids) {
                     System.out.println("Exporting data stream: " + id);
-                    if (line.hasOption("publish")) {
-                        if (de.publishGzipJSONData(line.getOptionValue("publish"), id)) {
-                            System.out.println("Success");
-                        } else {
-                            System.out.println("Failure");
-                        }
-                    }
+//                    if (line.hasOption("publish")) {
+//                        if (de.publishGzipJSONData(line.getOptionValue("publish"), id)) {
+//                            System.out.println("Success");
+//                        } else {
+//                            System.out.println("Failure");
+//                        }
+//                    }
                     if (line.hasOption("csv")) {
                         de.writeCSVDataFile(id);
                     }
