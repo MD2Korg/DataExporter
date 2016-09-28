@@ -35,7 +35,7 @@ java -jar dataexporter.jar --database DataKit.db --json
 
 Dump DB in CSV format
 ```
-java -jar dataexporter.jar --database DataKit.db --json
+java -jar dataexporter.jar --database DataKit.db --csv
 ```
 
 Dump DB in CSV and JSON formats
